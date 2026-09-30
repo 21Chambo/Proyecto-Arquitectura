@@ -1,0 +1,28 @@
+﻿# Control de versiones
+.git
+.github
+.gitignore
+
+# Documentacion (no necesaria en imagen)
+adr
+veterinary-system-docs
+*.pdf
+*.md
+
+# Artefactos de build del API
+veterinary-system-api/target
+veterinary-system-api/.mvn
+
+# Dependencias del Portal
+veterinary-system-portal/node_modules
+veterinary-system-portal/dist
+veterinary-system-portal/.angular
+
+# IDEs y entornos locales
+.idea
+*.iml
+.vscode
+.env
+
+# Logs
+*.log

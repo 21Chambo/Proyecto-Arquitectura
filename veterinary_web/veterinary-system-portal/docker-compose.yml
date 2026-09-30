@@ -1,0 +1,17 @@
+services:
+  portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${PORTAL_PORT:-3000}:80"
+    networks:
+      veterinary-network:
+        aliases:
+          - veterinary-system-portal
+
+networks:
+  veterinary-network:
+    name: veterinary-system-network
+    external: true

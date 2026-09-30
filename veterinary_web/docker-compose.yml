@@ -1,0 +1,113 @@
+﻿services:
+
+  # ─────────────────────────────────────────────
+  # 1. BASE DE DATOS — MySQL 8.0
+  # ─────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: veterinary-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE:      ${MYSQL_DATABASE:-db_unab}
+      MYSQL_USER:          ${MYSQL_USER:-veterinary}
+      MYSQL_PASSWORD:      ${MYSQL_PASSWORD:-veterinary}
+    ports:
+      - "${MYSQL_PORT:-13306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - veterinary-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysql --protocol=TCP -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ─────────────────────────────────────────────
+  # 2. MIGRACIONES — Flyway (se ejecuta y termina)
+  # ─────────────────────────────────────────────
+  flyway:
+    image: flyway/flyway:10
+    container_name: veterinary-flyway
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      FLYWAY_URL:                       "jdbc:mysql://db:3306/${MYSQL_DATABASE:-db_unab}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      FLYWAY_USER:                      ${MYSQL_USER:-veterinary}
+      FLYWAY_PASSWORD:                  ${MYSQL_PASSWORD:-veterinary}
+      FLYWAY_LOCATIONS:                 filesystem:/flyway/sql
+      FLYWAY_VALIDATE_MIGRATION_NAMING: "true"
+      FLYWAY_BASELINE_ON_MIGRATE:       "false"
+    volumes:
+      - ./veterinary-system-db/db/migration:/flyway/sql:ro
+    networks:
+      - veterinary-network
+    command: migrate
+
+  # ─────────────────────────────────────────────
+  # 3. BACKEND — Spring Boot API (Puerto 9090)
+  # ─────────────────────────────────────────────
+  api:
+    build:
+      context: ./veterinary-system-api
+      dockerfile: Dockerfile
+    container_name: veterinary-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
+    environment:
+      SPRING_DATASOURCE_URL:         "jdbc:mysql://db:3306/${MYSQL_DATABASE:-db_unab}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+      SPRING_DATASOURCE_USERNAME:    ${MYSQL_USER:-veterinary}
+      SPRING_DATASOURCE_PASSWORD:    ${MYSQL_PASSWORD:-veterinary}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      APP_CORS_ALLOWED_ORIGINS:      "http://localhost:${PORTAL_PORT:-3000},http://127.0.0.1:${PORTAL_PORT:-3000}"
+    ports:
+      - "${API_PORT:-9090}:9090"
+    networks:
+      veterinary-network:
+        aliases:
+          - veterinary-system-api
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9090/v3/api-docs || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 60s
+
+  # ─────────────────────────────────────────────
+  # 4. FRONTEND — Angular + Nginx (Puerto 3000)
+  # ─────────────────────────────────────────────
+  portal:
+    build:
+      context: ./veterinary-system-portal
+      dockerfile: Dockerfile
+    container_name: veterinary-portal
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${PORTAL_PORT:-3000}:80"
+    networks:
+      - veterinary-network
+
+# ─────────────────────────────────────────────
+# VOLÚMENES
+# ─────────────────────────────────────────────
+volumes:
+  mysql_data:
+    name: veterinary-mysql-data
+
+# ─────────────────────────────────────────────
+# RED INTERNA
+# ─────────────────────────────────────────────
+networks:
+  veterinary-network:
+    name: veterinary-system-network
+    external: true

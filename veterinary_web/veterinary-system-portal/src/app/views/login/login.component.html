@@ -1,0 +1,29 @@
+<div class="login-box">
+  <div class="card card-outline card-primary">
+    <div class="card-body">
+      <div class="auth-copy">
+        <span class="auth-eyebrow">Acceso</span>
+        <h1>Inicia sesion</h1>
+        <p>Administra clientes, mascotas, citas e historiales del sistema veterinario.</p>
+      </div>
+
+      <form [formGroup]="frmLogin" (submit)="iniciarSesion()">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="Usuario" formControlName="username">
+        </div>
+
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" placeholder="Contrasena" formControlName="password">
+        </div>
+
+        <div class="auth-feedback auth-feedback--error" *ngIf="authError">
+          {{ authError }}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Ingresando...' : 'Ingresar' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
