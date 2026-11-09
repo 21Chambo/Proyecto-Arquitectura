@@ -1,34 +1,13 @@
 import { environment } from '../../environments/environment';
 
+/**
+ * Devuelve la URL base del API.
+ * Si environment.apiBaseUrl está vacío (producción Docker), las peticiones
+ * son relativas al mismo origen y Nginx hace el proxy hacia el API.
+ * Durante el desarrollo, Angular CLI reenvía /api mediante proxy.conf.js.
+ */
 export function resolveApiBaseUrl(): string {
-  const configuredBaseUrl = (environment.apiBaseUrl || '').trim();
-
-  if (configuredBaseUrl) {
-    return configuredBaseUrl.replace(/\/+$/, '');
-  }
-
-  const protocol = typeof window !== 'undefined' && window.location?.protocol
-    ? window.location.protocol
-    : 'http:';
-  const hostname = typeof window !== 'undefined' && window.location?.hostname
-    ? window.location.hostname
-    : 'localhost';
-  const isLocalHost = hostname === 'localhost' || hostname === '13.223.141.227';
-  const isHttps = protocol === 'https:';
-
-  // When the portal is served over local HTTPS, keep API calls relative so
-  // Nginx can proxy them and we avoid mixed-content requests to port 9090.
-  if (isHttps) {
-    return '';
-  }
-
-  // In local development and local Docker, the backend is exposed on port 9090.
-  // In future static production deployments, the API can stay relative under /api/*.
-  if (!environment.production || isLocalHost) {
-    return '';
-  }
-
-  return '';
+  return (environment.apiBaseUrl || '').replace(/\/+$/, '');
 }
 
 export function buildApiUrl(endpoint: string): string {

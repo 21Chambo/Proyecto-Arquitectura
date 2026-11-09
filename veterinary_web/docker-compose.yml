@@ -1,4 +1,4 @@
-﻿services:
+services:
 
   # ─────────────────────────────────────────────
   # 1. BASE DE DATOS — MySQL 8.0
@@ -73,12 +73,6 @@
       veterinary-network:
         aliases:
           - veterinary-system-api
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9090/v3/api-docs || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 8
-      start_period: 60s
 
   # ─────────────────────────────────────────────
   # 4. FRONTEND — Angular + Nginx (Puerto 3000)
@@ -93,7 +87,7 @@
       api:
         condition: service_healthy
     ports:
-      - "${PORTAL_PORT:-3000}:80"
+      - "${PORTAL_PORT:-3000}:8080"
     networks:
       - veterinary-network
 
@@ -109,5 +103,3 @@ volumes:
 # ─────────────────────────────────────────────
 networks:
   veterinary-network:
-    name: veterinary-system-network
-    external: true

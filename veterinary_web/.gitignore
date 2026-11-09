@@ -1,0 +1,21 @@
+# Secretos y variables de entorno
+.env
+
+# Logs de compilación y ejecución
+*.log
+
+# Artefactos de build de Java/Maven
+target/
+
+# Dependencias y build de Node/Angular
+node_modules/
+dist/
+.angular/
+
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+*.iml
+.vscode/
