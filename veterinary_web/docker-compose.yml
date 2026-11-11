@@ -8,10 +8,10 @@ services:
     container_name: veterinary-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?falta MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE:      ${MYSQL_DATABASE:-db_unab}
       MYSQL_USER:          ${MYSQL_USER:-veterinary}
-      MYSQL_PASSWORD:      ${MYSQL_PASSWORD:-veterinary}
+      MYSQL_PASSWORD:      ${MYSQL_PASSWORD:?falta MYSQL_PASSWORD}
     ports:
       - "${MYSQL_PORT:-13306}:3306"
     volumes:
@@ -37,7 +37,7 @@ services:
     environment:
       FLYWAY_URL:                       "jdbc:mysql://db:3306/${MYSQL_DATABASE:-db_unab}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
       FLYWAY_USER:                      ${MYSQL_USER:-veterinary}
-      FLYWAY_PASSWORD:                  ${MYSQL_PASSWORD:-veterinary}
+      FLYWAY_PASSWORD:                  ${MYSQL_PASSWORD:?falta MYSQL_PASSWORD}
       FLYWAY_LOCATIONS:                 filesystem:/flyway/sql
       FLYWAY_VALIDATE_MIGRATION_NAMING: "true"
       FLYWAY_BASELINE_ON_MIGRATE:       "false"
@@ -64,7 +64,7 @@ services:
     environment:
       SPRING_DATASOURCE_URL:         "jdbc:mysql://db:3306/${MYSQL_DATABASE:-db_unab}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
       SPRING_DATASOURCE_USERNAME:    ${MYSQL_USER:-veterinary}
-      SPRING_DATASOURCE_PASSWORD:    ${MYSQL_PASSWORD:-veterinary}
+      SPRING_DATASOURCE_PASSWORD:    ${MYSQL_PASSWORD:?falta MYSQL_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       APP_CORS_ALLOWED_ORIGINS:      "http://localhost:${PORTAL_PORT:-3000},http://127.0.0.1:${PORTAL_PORT:-3000}"
     ports:

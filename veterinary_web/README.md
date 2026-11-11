@@ -9,7 +9,13 @@ Aplicacion web para gestionar clientes, mascotas, especies, razas, veterinarios,
 
 ## Inicio rapido en Windows
 
-Desde esta carpeta (`veterinary_web`), opcionalmente copia `.env.example` como `.env` para personalizar puertos y credenciales locales. Luego inicia el sistema:
+Desde esta carpeta (`veterinary_web`), crea la red compartida una sola vez:
+
+```powershell
+docker network create veterinary-system-network
+```
+
+Luego copia `.env.example` como `.env` y define valores propios para `MYSQL_ROOT_PASSWORD` y `MYSQL_PASSWORD`. No uses contraseñas vacías. Inicia el sistema:
 
 ```powershell
 docker compose up --build -d --wait
@@ -36,6 +42,15 @@ El puerto `9090` corresponde a la API, no al portal. Abrir `http://localhost:909
 La base persiste en el volumen Docker `veterinary-mysql-data`. Las migraciones versionadas estan en `veterinary-system-db/db/migration/`.
 
 ## Comandos utiles
+
+Ejecutar las pruebas del API antes de construir o enviar cambios:
+
+```powershell
+cd veterinary-system-api
+./mvnw -B verify
+```
+
+En Windows PowerShell tambien se puede usar `mvnw.cmd -B verify`.
 
 Ver estado y salud:
 
@@ -74,7 +89,18 @@ Las variables estan documentadas en `.env.example`:
 - `API_PORT` cambia el puerto de la API; por defecto es `9090`.
 - `PORTAL_PORT` cambia el puerto del portal; por defecto es `3000`.
 
-Los valores predeterminados son solo para desarrollo local. Usa credenciales propias y no publiques archivos `.env` con secretos.
+Las contraseñas no tienen valores predeterminados. Usa credenciales propias y no publiques archivos `.env` con secretos; `.env` está excluido de Git.
+
+## Despliegue en producción
+
+El archivo `compose.prod.yml` usa imágenes publicadas en GHCR y no construye imágenes en la instancia. Define `TAG`, `MYSQL_ROOT_PASSWORD` y `MYSQL_PASSWORD` en el entorno antes de ejecutar. `MYSQL_DATABASE` y `MYSQL_USER` pueden conservar sus valores de `.env.example`:
+
+```sh
+docker compose -f compose.prod.yml pull
+docker compose -f compose.prod.yml up -d
+```
+
+En producción solo se publica el portal en el puerto `80`; la API y MySQL quedan sin puertos publicados. Antes de exponer el sistema, sustituye en la base de datos los hashes iniciales de las cuentas `admin` y `staff` por hashes BCrypt de contraseñas únicas del equipo. Flyway aplica esa semilla una sola vez al inicializar la base.
 
 ## Relaciones y eliminaciones
 
