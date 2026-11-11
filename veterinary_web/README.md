@@ -9,13 +9,19 @@ Aplicacion web para gestionar clientes, mascotas, especies, razas, veterinarios,
 
 ## Inicio rapido en Windows
 
-Desde esta carpeta (`veterinary_web`), crea la red compartida una sola vez:
+Desde esta carpeta (`veterinary_web`), copia la configuracion de ejemplo:
 
 ```powershell
-docker network create veterinary-system-network
+Copy-Item .env.example .env
 ```
 
-Luego copia `.env.example` como `.env` y define valores propios para `MYSQL_ROOT_PASSWORD` y `MYSQL_PASSWORD`. No uses contraseñas vacías. Inicia el sistema:
+Edita `.env` y define valores propios para `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`,
+`APP_INITIAL_ADMIN_PASSWORD` y `APP_INITIAL_STAFF_PASSWORD`. Las claves de acceso
+deben ser distintas, tener al menos 12 caracteres y no superar 72 bytes UTF-8.
+No uses contrasenas vacias. Compose crea automaticamente la red. Inicia el sistema:
+
+Si una clave contiene `$`, `#` o espacios, escribela entre comillas simples en
+`.env` para conservar su valor literal. No compartas ni subas ese archivo a Git.
 
 ```powershell
 docker compose up --build -d --wait
@@ -82,6 +88,56 @@ docker compose down
 
 ## Configuracion local
 
+### Credenciales de acceso
+
+| Usuario | Rol | Contrasena inicial |
+| --- | --- | --- |
+| `admin` | Administrador | El valor que definas en `APP_INITIAL_ADMIN_PASSWORD` |
+| `staff` | Personal | El valor que definas en `APP_INITIAL_STAFF_PASSWORD` |
+
+No hay una contrasena universal: `admin123` y `staff123` no son claves predeterminadas.
+En una base nueva, Flyway crea las cuentas y el API sustituye los hashes originales
+de V0002 por hashes BCrypt de las claves configuradas. No edites migraciones ya
+aplicadas ni ejecutes SQL manual para preparar el acceso.
+
+En una base existente solo se corrigen cuentas que todavia conservan exactamente
+el hash original de V0002. Las contrasenas personalizadas, roles, estado habilitado
+y demas datos se conservan, incluidos ajustes locales anteriores. Reiniciar o cambiar
+las variables **no restablece** las claves de cuentas ya inicializadas. Si conservas
+una base anterior, usa su clave actual para esas cuentas; estas variables no son un
+mecanismo de recuperacion de contrasenas.
+
+El API falla al iniciar si una cuenta pendiente de inicializar no tiene una clave
+valida configurada. Una clave incorrecta o una cuenta deshabilitada devuelve HTTP
+`401` con un mensaje generico, sin revelar si existe el usuario.
+
+Para comprobar el login desde PowerShell sin escribir la clave en el historial:
+
+```powershell
+$usuario = Read-Host 'Usuario (admin o staff)'
+$credencial = Get-Credential -UserName $usuario -Message 'Acceso al sistema veterinario'
+$body = @{ username = $usuario; password = $credencial.GetNetworkCredential().Password } | ConvertTo-Json
+$sesion = Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/auth/login -ContentType application/json -Body $body
+$sesion | Select-Object username, fullName, roles
+Remove-Variable body, credencial, sesion
+```
+
+La salud responde `503` durante el arranque y solo pasa a `ok` despues de completar
+la inicializacion de credenciales y comprobar MySQL.
+
+Prueba automatica de salud, ambos roles, acceso autenticado y rechazo de claves
+incorrectas (no imprime claves ni tokens):
+
+```powershell
+$admin = Get-Credential -UserName admin -Message 'Clave actual de admin'
+$staff = Get-Credential -UserName staff -Message 'Clave actual de staff'
+.\scripts\Test-Authentication.ps1 -AdminCredential $admin -StaffCredential $staff
+```
+
+Para otro puerto o un despliegue con HTTPS, agrega `-BaseUrl https://tu-dominio`.
+Si Windows bloquea scripts, habilitalos solo en la terminal de prueba con
+`Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`; no cambia la politica permanente.
+
 Las variables estan documentadas en `.env.example`:
 
 - `MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_USER` y `MYSQL_PASSWORD` configuran MySQL y la conexion de la API.
@@ -93,14 +149,14 @@ Las contraseñas no tienen valores predeterminados. Usa credenciales propias y n
 
 ## Despliegue en producción
 
-El archivo `compose.prod.yml` usa imágenes publicadas en GHCR y no construye imágenes en la instancia. Define `TAG`, `MYSQL_ROOT_PASSWORD` y `MYSQL_PASSWORD` en el entorno antes de ejecutar. `MYSQL_DATABASE` y `MYSQL_USER` pueden conservar sus valores de `.env.example`:
+El archivo `compose.prod.yml` usa imagenes publicadas en GHCR y no construye imagenes en la instancia. Define `TAG`, `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, `APP_INITIAL_ADMIN_PASSWORD` y `APP_INITIAL_STAFF_PASSWORD` en el entorno o en un `.env` privado antes de ejecutar. Usa claves unicas para AWS, distintas de las de desarrollo. `TAG` debe identificar imagenes que incluyan esta correccion. `MYSQL_DATABASE` y `MYSQL_USER` pueden conservar sus valores de `.env.example`:
 
 ```sh
 docker compose -f compose.prod.yml pull
-docker compose -f compose.prod.yml up -d
+docker compose -f compose.prod.yml up -d --wait
 ```
 
-En producción solo se publica el portal en el puerto `80`; la API y MySQL quedan sin puertos publicados. Antes de exponer el sistema, sustituye en la base de datos los hashes iniciales de las cuentas `admin` y `staff` por hashes BCrypt de contraseñas únicas del equipo. Flyway aplica esa semilla una sola vez al inicializar la base.
+En produccion solo se publica el portal en el puerto `80`; la API y MySQL quedan sin puertos publicados. La inicializacion de credenciales es automatica y sigue las mismas reglas descritas arriba. Conserva el volumen de MySQL: volver a descargar el repositorio no elimina ni restablece las credenciales de una base existente. Configura HTTPS en el balanceador o proxy de AWS antes de exponer el login: la autenticacion actual usa Basic Auth y requiere cifrado en transito.
 
 ## Relaciones y eliminaciones
 

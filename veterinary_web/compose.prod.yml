@@ -49,6 +49,12 @@ services:
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-veterinary}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:?falta MYSQL_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      APP_INITIAL_ADMIN_PASSWORD: ${APP_INITIAL_ADMIN_PASSWORD:?falta APP_INITIAL_ADMIN_PASSWORD}
+      APP_INITIAL_STAFF_PASSWORD: ${APP_INITIAL_STAFF_PASSWORD:?falta APP_INITIAL_STAFF_PASSWORD}
+    networks:
+      default:
+        aliases:
+          - veterinary-system-api
     expose:
       - "9090"
     logging:
@@ -60,9 +66,10 @@ services:
     image: ghcr.io/21chambo/proyecto-arquitectura-portal:${TAG:?falta TAG}
     restart: unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
-      - "80:80"
+      - "80:8080"
     logging:
       options:
         max-size: 10m
