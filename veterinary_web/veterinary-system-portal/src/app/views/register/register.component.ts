@@ -4,6 +4,7 @@ import { HelperService, MessageType } from '../../utils/services/helper.service'
 import { RegisterService } from './register.service';
 
 @Component({
+  standalone: false,
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']

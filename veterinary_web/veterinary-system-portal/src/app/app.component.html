@@ -22,3 +22,11 @@
     <router-outlet></router-outlet>
   </main>
 </div>
+
+<div class="notification-stack" aria-live="polite" aria-atomic="false">
+  <div *ngFor="let notice of notifications.messages()" class="alert alert-dismissible"
+       [ngClass]="'alert-' + notice.kind" role="alert">
+    <strong>{{ notice.title }}</strong><div>{{ notice.message }}</div>
+    <button type="button" class="btn-close" aria-label="Cerrar notificacion" (click)="notifications.dismiss(notice.id)"></button>
+  </div>
+</div>

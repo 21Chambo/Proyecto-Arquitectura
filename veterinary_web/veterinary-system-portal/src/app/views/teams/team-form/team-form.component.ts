@@ -5,6 +5,7 @@ import { HelperService, MessageType } from '../../../utils/services/helper.servi
 import { TeamsService } from '../teams.service';
 
 @Component({
+  standalone: false,
   selector: 'app-team-form',
   templateUrl: './team-form.component.html',
   styleUrls: ['./team-form.component.css']

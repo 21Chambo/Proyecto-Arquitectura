@@ -11,12 +11,16 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/frontend-unab",
+            "outputPath": {
+              "base": "dist/frontend-unab",
+              "browser": ""
+            },
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "tsconfig.app.json",
             "aot": true,
             "assets": [
@@ -24,26 +28,12 @@
               "src/assets"
             ],
             "styles": [
-              "node_modules/admin-lte/plugins/fontawesome-free/css/all.min.css",
-              "node_modules/admin-lte/plugins/icheck-bootstrap/icheck-bootstrap.min.css",
-              "node_modules/admin-lte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css",
-              "node_modules/admin-lte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css",
-              "node_modules/admin-lte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css",
-              "node_modules/admin-lte/dist/css/adminlte.min.css",
-              "src/styles.css",
-              "node_modules/ngx-toastr/toastr.css"
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+              "src/styles.css"
             ],
-            "scripts": [
-              "node_modules/admin-lte/plugins/jquery/jquery.min.js",
-              "node_modules/admin-lte/plugins/bootstrap/js/bootstrap.bundle.min.js",
-              "node_modules/admin-lte/plugins/datatables/jquery.dataTables.min.js",
-              "node_modules/admin-lte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js",
-              "node_modules/admin-lte/plugins/datatables-responsive/js/dataTables.responsive.min.js",
-              "node_modules/admin-lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js",
-              "node_modules/admin-lte/plugins/datatables-buttons/js/dataTables.buttons.min.js",
-              "node_modules/admin-lte/plugins/datatables-buttons/js/buttons.bootstrap4.min.js",
-              "node_modules/admin-lte/dist/js/adminlte.min.js"
-            ]
+            "scripts": [],
+            "browser": "src/main.ts"
           },
           "configurations": {
             "production": {
@@ -56,11 +46,8 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "initial",
@@ -73,33 +60,43 @@
                   "maximumError": "10kb"
                 }
               ]
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true,
+              "extractLicenses": false
             }
-          }
+          },
+          "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "options": {
-            "browserTarget": "frontend-unab:build",
             "proxyConfig": "proxy.conf.js"
           },
           "configurations": {
             "production": {
-              "browserTarget": "frontend-unab:build:production"
+              "buildTarget": "frontend-unab:build:production"
+            },
+            "development": {
+              "buildTarget": "frontend-unab:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
-            "browserTarget": "frontend-unab:build",
-            "proxyConfig": "proxy.conf.js"
+            "buildTarget": "frontend-unab:build"
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular/build:karma",
           "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
             "assets": [
@@ -107,40 +104,16 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "src/styles.css"
             ],
             "scripts": []
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "tsconfig.app.json",
-              "tsconfig.spec.json",
-              "e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
-        },
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "frontend-unab:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "frontend-unab:serve:production"
-            }
           }
         }
       }
     }
   },
-  "defaultProject": "frontend-unab",
   "cli": {
     "analytics": false
   }

@@ -4,6 +4,7 @@ import { HelperService, MessageType } from '../../../utils/services/helper.servi
 import { ResourceColumnConfig, ResourceConfig, ResourceRegistryService } from '../../../services/resource-registry.service';
 
 @Component({
+  standalone: false,
   selector: 'app-resource-index',
   templateUrl: './resource-index.component.html',
   styleUrls: ['./resource-index.component.css']

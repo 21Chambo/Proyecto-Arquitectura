@@ -8,6 +8,7 @@ import { TeamsService } from '../../teams/teams.service';
 import { MatchsService } from '../matchs.service';
 
 @Component({
+  standalone: false,
   selector: 'app-match-form',
   templateUrl: './match-form.component.html',
   styleUrls: ['./match-form.component.css']

@@ -1,6 +1,7 @@
 # FrontendUnab
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.2.3.
+This portal uses Angular 22, Angular CLI 22 and Node 24 LTS (24.15 or newer within major 24).
+Install the exact dependencies with `npm ci`; do not use `--force` or `--legacy-peer-deps`.
 
 ## Development server
 
@@ -12,7 +13,7 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+Run `npm run build -- --configuration production`. Files are written directly to `dist/frontend-unab`, which is also copied into the Nginx image. Bootstrap 5 and Font Awesome replace the unused AdminLTE/jQuery/DataTables bundle. Notifications use Angular text interpolation and expire after five seconds.
 
 ## Production deployment
 
@@ -72,10 +73,14 @@ docker compose up -d
 ## Running unit tests
 
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+For CI, run `npm run test:ci`: Chrome runs headless and the process exits automatically.
+Set `CHROME_BIN` to the Chrome/Chromium executable if it is not detected automatically.
 
 ## Running end-to-end tests
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+The historical `e2e/` files use Protractor and are not an active test suite. Protractor
+and the old `ng e2e` target were removed from the installed dependencies. The maintained
+unit suites, production build and API authentication checks are documented in the parent README.
 
 ## Further help
 

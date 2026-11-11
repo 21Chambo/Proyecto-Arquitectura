@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { AppComponent } from './app.component';
+import { NotificationService } from './services/notification.service';
 import { DashboardComponent } from './views/dashboard/dashboard.component';
 import { ResourceIndexComponent } from './views/resources/resource-index/resource-index.component';
 import { ResourceRegistryService } from './services/resource-registry.service';
@@ -99,6 +100,20 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     expect(app.navItems).toBeTruthy();
   });
+
+  it('renders notifications as text and removes them after their timeout', fakeAsync(() => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const notifications = TestBed.inject(NotificationService);
+    notifications.error('<img src=x onerror=alert(1)>', 'Error de prueba');
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const alert = compiled.querySelector('[role="alert"]');
+    expect(alert.textContent).toContain('<img src=x onerror=alert(1)>');
+    expect(alert.querySelector('img')).toBeNull();
+    tick(5000);
+    fixture.detectChanges();
+    expect(compiled.querySelector('[role="alert"]')).toBeNull();
+  }));
 
   it('should render a router outlet container', () => {
     const fixture = TestBed.createComponent(AppComponent);

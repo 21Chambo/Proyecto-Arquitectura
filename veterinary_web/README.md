@@ -5,6 +5,7 @@ Aplicacion web para gestionar clientes, mascotas, especies, razas, veterinarios,
 ## Requisitos
 
 - Docker Desktop con Docker Compose v2.
+- Para trabajar fuera de Docker: Java 17, Node 24 (24.15 o superior dentro de la rama 24) y Python 3 para validar Compose.
 - Puertos disponibles: `3000` (portal), `9090` (API) y `13306` (MySQL en el host).
 
 ## Inicio rapido en Windows
@@ -174,14 +175,67 @@ Las contraseñas no tienen valores predeterminados. Usa credenciales propias y n
 
 ## Despliegue en producción
 
-El archivo `compose.prod.yml` usa imagenes publicadas en GHCR y no construye imagenes en la instancia. Define `TAG`, `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, `APP_INITIAL_ADMIN_PASSWORD` y `APP_INITIAL_STAFF_PASSWORD` en el entorno o en un `.env` privado antes de ejecutar. Usa claves unicas para AWS, distintas de las de desarrollo. `TAG` debe identificar imagenes que incluyan esta correccion. `MYSQL_DATABASE` y `MYSQL_USER` pueden conservar sus valores de `.env.example`:
+El archivo `compose.prod.yml` usa imagenes publicadas en GHCR y no construye imagenes en la instancia. Copia `.env.prod.example` como `.env.prod` y define `TAG`, `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, `APP_INITIAL_ADMIN_PASSWORD` y `APP_INITIAL_STAFF_PASSWORD`. Las variables ausentes o vacias impiden validar o iniciar Compose. Usa claves unicas para produccion, distintas de las de desarrollo. `TAG` debe ser el SHA de un commit cuyas imagenes hayan sido publicadas y escaneadas. `MYSQL_DATABASE` y `MYSQL_USER` pueden conservar sus valores de ejemplo:
 
 ```sh
-docker compose -f compose.prod.yml pull
-docker compose -f compose.prod.yml up -d --wait
+docker compose --env-file .env.prod -f compose.prod.yml config --quiet
+docker compose --env-file .env.prod -f compose.prod.yml pull
+docker compose --env-file .env.prod -f compose.prod.yml up -d --wait
 ```
 
 En produccion solo se publica el portal en el puerto `80`; la API y MySQL quedan sin puertos publicados. La inicializacion de credenciales es automatica y sigue las mismas reglas descritas arriba. Conserva el volumen de MySQL: volver a descargar el repositorio no elimina ni restablece las credenciales de una base existente. Configura HTTPS en el balanceador o proxy de AWS antes de exponer el login: la autenticacion actual usa Basic Auth y requiere cifrado en transito.
+
+El mapeo es `80:8080`: Nginx escucha en `8080` dentro del contenedor para mantener
+el usuario sin privilegios. Publicar `80:80` impediria acceder al servidor actual.
+Todos los servicios rotan logs a `10m`, con tres archivos. DB, API y portal usan
+`restart: unless-stopped`; Flyway se ejecuta una vez y no se reinicia en bucle.
+
+El proyecto de produccion se llama `veterinary-production` y usa su propio volumen
+`veterinary-production_mysql_data`; no reutiliza `veterinary-mysql-data` de desarrollo.
+Si ya existe una instalacion de produccion con el nombre anterior, respalda sus datos
+y planifica su migracion antes de cambiar el volumen; no borres el volumen anterior.
+
+En el primer despliegue, define y verifica las nuevas claves de **admin y staff**.
+Aunque V0002 contiene hashes historicos, el API los sustituye antes de estar listo
+y falla si falta una clave valida. No edites V0002: alteraria el checksum de bases
+existentes. Las cuentas ya personalizadas conservan su clave actual.
+
+Validacion automatica, sin cargar `.env`, iniciar contenedores ni mostrar secretos:
+
+```sh
+python scripts/test_production_compose.py
+```
+
+La prueba exige cada secreto y `TAG` por separado, tanto ausentes como vacios,
+y comprueba imagenes GHCR sin `build`, puertos privados, logs y volumen aislado.
+Tambien corre en GitHub antes de construir imagenes.
+Despues de un futuro despliegue autorizado, desde otro equipo se debe comprobar
+que `nc -z -w 3 <ip-ec2> 13306` y `nc -z -w 3 <ip-ec2> 9090` no conectan.
+Esta comprobacion remota no se ejecuta como parte de las pruebas locales.
+
+## Dependencias y seguridad (cambio 14)
+
+La API ya usa Spring Boot 4.0.9, Java 17 y `com.mysql:mysql-connector-j`.
+Hibernate detecta el dialecto con la conexion MySQL; no se fuerza `MySQL57Dialect`
+ni se agrega el antiguo `MySQL8Dialect` de Hibernate 5 a esta version moderna.
+El portal se actualiza de Angular 10 a Angular 22, con Node 24, RxJS 7 y Bootstrap 5.
+La imagen de ejecucion usa Nginx sin privilegios 1.30.6 y actualiza los paquetes Alpine.
+Se retiran AdminLTE, jQuery, DataTables, Protractor, TSLint y ngx-toastr.
+Los avisos usan Angular con interpolacion de texto, cierre manual y expiracion;
+no se renderiza HTML recibido desde la API. No hay exclusiones `.trivyignore`.
+
+Desde la raiz del repositorio, revisar primero todas las severidades, incluidas
+las dependencias de desarrollo, y despues aplicar la puerta de calidad:
+
+```sh
+trivy fs --scanners vuln --include-dev-deps veterinary_web
+docker build -t veterinary-api:verification veterinary_web/veterinary-system-api
+trivy image --severity CRITICAL --exit-code 1 veterinary-api:verification
+```
+
+El filtro `CRITICAL` no certifica ausencia de vulnerabilidades de menor severidad.
+El escaneo del codigo en CI tambien incluye las dependencias de desarrollo.
+La suite actual del API tiene 88 pruebas, mas que los 81 casos del enunciado original.
 
 ## Relaciones y eliminaciones
 

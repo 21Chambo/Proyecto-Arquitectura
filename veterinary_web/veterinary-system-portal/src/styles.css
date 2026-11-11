@@ -82,3 +82,22 @@ img,
 svg {
   max-width: 100%;
 }
+
+/* Compatibility for the existing forms after replacing AdminLTE with Bootstrap 5. */
+.btn-block { display: block; width: 100%; }
+.form-group { margin-bottom: 1rem; }
+.form-row { display: flex; flex-wrap: wrap; margin: 0 -.5rem; }
+.form-row > .form-group { padding: 0 .5rem; }
+.card-header { padding: 1rem 1.5rem; }
+.card-title { margin: 0; font-size: 1.1rem; }
+.card-tools { float: right; }
+.input-group-append { display: flex; }
+.custom-select { display: block; width: 100%; padding: .375rem .75rem; background-color: #fff; }
+.float-right { float: right !important; }
+.text-right { text-align: right !important; }
+.mr-1 { margin-right: .25rem !important; }
+.mr-2 { margin-right: .5rem !important; }
+.ml-2 { margin-left: .5rem !important; }
+.content-header { padding: 1rem 0; }
+.notification-stack { position: fixed; right: 1rem; bottom: 1rem; z-index: 1100; width: min(360px, calc(100vw - 2rem)); }
+.notification-stack .alert { box-shadow: 0 4px 16px #0002; }

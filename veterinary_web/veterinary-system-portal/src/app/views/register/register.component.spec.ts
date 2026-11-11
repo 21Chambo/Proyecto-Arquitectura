@@ -3,7 +3,6 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ToastrModule } from 'ngx-toastr';
 
 import { RegisterComponent } from './register.component';
 
@@ -13,7 +12,7 @@ describe('RegisterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, ReactiveFormsModule, RouterTestingModule, ToastrModule.forRoot()],
+      imports: [HttpClientTestingModule, ReactiveFormsModule, RouterTestingModule],
       declarations: [ RegisterComponent ],
       schemas: [NO_ERRORS_SCHEMA]
     })
