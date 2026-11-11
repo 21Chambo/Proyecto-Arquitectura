@@ -9,26 +9,24 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
-public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
+public class SpringSecurityConfig {
 
-	private final UserDetailsService userDetailsService;
 	private final List<String> allowedOrigins;
 
 	public SpringSecurityConfig(
-			UserDetailsService userDetailsService,
 			@Value("${app.cors.allowed-origins}") String allowedOriginsProperty) {
-		this.userDetailsService = userDetailsService;
 		this.allowedOrigins = Arrays.stream(allowedOriginsProperty.split(","))
 				.map(String::trim)
 				.filter(origin -> !origin.isEmpty())
@@ -40,31 +38,24 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		return new BCryptPasswordEncoder();
 	}
 
-	@Override
-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(this.userDetailsService).passwordEncoder(passwordEncoder());
-	}
-
-	@Override
 	@Bean
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		return super.authenticationManagerBean();
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+		return configuration.getAuthenticationManager();
 	}
 
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		http.cors().and()
-			.csrf().disable()
-			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-			.and()
-			.authorizeRequests()
-			.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-			.antMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
-			.antMatchers(HttpMethod.GET, "/api/health").permitAll()
-			.antMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-			.anyRequest().authenticated()
-			.and()
-			.httpBasic();
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http.cors(Customizer.withDefaults())
+			.csrf(AbstractHttpConfigurer::disable)
+			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.authorizeHttpRequests(authorize -> authorize
+				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/health").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+				.anyRequest().authenticated())
+			.httpBasic(Customizer.withDefaults());
+		return http.build();
 	}
 
 	@Bean

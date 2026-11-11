@@ -2,17 +2,13 @@ package com.backend.unab.exception;
 
 import java.time.LocalDateTime;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AccountStatusException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -22,12 +18,6 @@ import com.backend.unab.dto.ApiErrorDto;
 public class GlobalExceptionHandler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
-	@ExceptionHandler({BadCredentialsException.class, AccountStatusException.class, UsernameNotFoundException.class})
-	public ResponseEntity<ApiErrorDto> handleAuthentication(AuthenticationException ex, HttpServletRequest request) {
-		LOGGER.warn("Rejected authentication for path {}", request.getRequestURI());
-		return buildResponse(HttpStatus.UNAUTHORIZED, "Usuario o contrasena invalidos.", request.getRequestURI());
-	}
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ApiErrorDto> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
