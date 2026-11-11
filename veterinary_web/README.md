@@ -58,6 +58,31 @@ cd veterinary-system-api
 
 En Windows PowerShell tambien se puede usar `mvnw.cmd -B verify`.
 
+En Linux y GitHub Actions el wrapper ya esta versionado con permiso `100755` y
+finales de linea LF. No requiere ejecutar `chmod` manualmente.
+El job de pruebas del API usa Java 17
+y ejecuta toda la suite, incluidas las pruebas agregadas despues de la lista
+original de 81 casos.
+
+Desde `veterinary_web`, en otra terminal, ejecutar las pruebas del portal sin
+interfaz grafica ni vigilancia de archivos:
+
+```sh
+cd veterinary-system-portal
+npm ci
+npm run test:ci
+```
+
+El script usa `ChromeHeadlessCI` y termina al finalizar las pruebas. Requiere Chrome
+o Chromium instalado; define `CHROME_BIN` si no se detecta automaticamente.
+La configuracion interactiva de `npm test` se conserva para desarrollo.
+
+El workflow reutilizable `.github/workflows/tests.yml` ejecuta las pruebas del
+API y portal. El workflow de Trivy y GHCR depende de que ambas suites terminen
+correctamente: solo entonces construye, escanea y publica las imagenes.
+Los Dockerfiles pueden mantener `-DskipTests` porque esa dependencia bloquea la
+publicacion si falla cualquier prueba. Esto no realiza despliegues en AWS.
+
 Ver estado y salud:
 
 ```powershell
