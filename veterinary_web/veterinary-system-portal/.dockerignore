@@ -4,3 +4,7 @@ dist
 .idea
 .git
 npm-debug.log
+*.log
+.env
+.env.*
+nginx/certs/

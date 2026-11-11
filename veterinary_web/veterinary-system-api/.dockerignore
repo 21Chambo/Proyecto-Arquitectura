@@ -3,3 +3,6 @@ target
 .idea
 .git
 *.iml
+*.log
+.env
+.env.*

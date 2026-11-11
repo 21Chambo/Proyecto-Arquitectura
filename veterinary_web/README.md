@@ -9,15 +9,7 @@ Aplicacion web para gestionar clientes, mascotas, especies, razas, veterinarios,
 
 ## Inicio rapido en Windows
 
-Desde esta carpeta (`veterinary_web`), crea la red compartida una sola vez:
-
-```powershell
-docker network create veterinary-system-network
-```
-
-Si Docker indica que la red ya existe, continua con el siguiente paso.
-
-Opcionalmente, copia `.env.example` como `.env` para personalizar puertos y credenciales locales. Luego inicia el sistema:
+Desde esta carpeta (`veterinary_web`), opcionalmente copia `.env.example` como `.env` para personalizar puertos y credenciales locales. Luego inicia el sistema:
 
 ```powershell
 docker compose up --build -d --wait
@@ -28,6 +20,7 @@ Cuando los servicios esten listos, abre:
 - Portal web: <http://localhost:3000>
 - Swagger UI: <http://localhost:9090/swagger-ui.html>
 - OpenAPI JSON: <http://localhost:9090/v3/api-docs>
+- Health check: <http://localhost:9090/api/health>
 
 El puerto `9090` corresponde a la API, no al portal. Abrir `http://localhost:9090/` puede mostrar un 404 porque la API no sirve una pagina web en la ruta raiz.
 
