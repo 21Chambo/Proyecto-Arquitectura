@@ -1,0 +1,73 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?falta MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-db_unab}
+      MYSQL_USER: ${MYSQL_USER:-veterinary}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?falta MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysql --protocol=TCP -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  flyway:
+    image: flyway/flyway:10
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      FLYWAY_URL: "jdbc:mysql://db:3306/${MYSQL_DATABASE:-db_unab}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      FLYWAY_USER: ${MYSQL_USER:-veterinary}
+      FLYWAY_PASSWORD: ${MYSQL_PASSWORD:?falta MYSQL_PASSWORD}
+      FLYWAY_LOCATIONS: filesystem:/flyway/sql
+      FLYWAY_VALIDATE_MIGRATION_NAMING: "true"
+      FLYWAY_BASELINE_ON_MIGRATE: "false"
+    volumes:
+      - ./veterinary-system-db/db/migration:/flyway/sql:ro
+    command: migrate
+
+  api:
+    image: ghcr.io/21chambo/proyecto-arquitectura-api:${TAG:?falta TAG}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/${MYSQL_DATABASE:-db_unab}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-veterinary}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:?falta MYSQL_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+    expose:
+      - "9090"
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  portal:
+    image: ghcr.io/21chambo/proyecto-arquitectura-portal:${TAG:?falta TAG}
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  mysql_data:
+    name: veterinary-mysql-data

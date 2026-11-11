@@ -15,9 +15,7 @@ Desde esta carpeta (`veterinary_web`), crea la red compartida una sola vez:
 docker network create veterinary-system-network
 ```
 
-Si Docker indica que la red ya existe, continua con el siguiente paso.
-
-Opcionalmente, copia `.env.example` como `.env` para personalizar puertos y credenciales locales. Luego inicia el sistema:
+Luego copia `.env.example` como `.env` y define valores propios para `MYSQL_ROOT_PASSWORD` y `MYSQL_PASSWORD`. No uses contraseñas vacías. Inicia el sistema:
 
 ```powershell
 docker compose up --build -d --wait
@@ -90,7 +88,18 @@ Las variables estan documentadas en `.env.example`:
 - `API_PORT` cambia el puerto de la API; por defecto es `9090`.
 - `PORTAL_PORT` cambia el puerto del portal; por defecto es `3000`.
 
-Los valores predeterminados son solo para desarrollo local. Usa credenciales propias y no publiques archivos `.env` con secretos.
+Las contraseñas no tienen valores predeterminados. Usa credenciales propias y no publiques archivos `.env` con secretos; `.env` está excluido de Git.
+
+## Despliegue en producción
+
+El archivo `compose.prod.yml` usa imágenes publicadas en GHCR y no construye imágenes en la instancia. Define `TAG`, `MYSQL_ROOT_PASSWORD` y `MYSQL_PASSWORD` en el entorno antes de ejecutar. `MYSQL_DATABASE` y `MYSQL_USER` pueden conservar sus valores de `.env.example`:
+
+```sh
+docker compose -f compose.prod.yml pull
+docker compose -f compose.prod.yml up -d
+```
+
+En producción solo se publica el portal en el puerto `80`; la API y MySQL quedan sin puertos publicados. Antes de exponer el sistema, sustituye en la base de datos los hashes iniciales de las cuentas `admin` y `staff` por hashes BCrypt de contraseñas únicas del equipo. Flyway aplica esa semilla una sola vez al inicializar la base.
 
 ## Relaciones y eliminaciones
 
