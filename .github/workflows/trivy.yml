@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Escanear el código
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: veterinary_web
@@ -34,7 +34,7 @@ jobs:
         run: docker build -t "$API_IMAGE:$GITHUB_SHA" ./veterinary_web/veterinary-system-api
 
       - name: Escanear la imagen del API
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: ghcr.io/21chambo/proyecto-arquitectura-api:${{ github.sha }}
@@ -45,7 +45,7 @@ jobs:
         run: docker build -t "$PORTAL_IMAGE:$GITHUB_SHA" ./veterinary_web/veterinary-system-portal
 
       - name: Escanear la imagen del portal
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: ghcr.io/21chambo/proyecto-arquitectura-portal:${{ github.sha }}
