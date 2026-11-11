@@ -44,6 +44,15 @@ La base persiste en el volumen Docker `veterinary-mysql-data`. Las migraciones v
 
 ## Comandos utiles
 
+Ejecutar las pruebas del API antes de construir o enviar cambios:
+
+```powershell
+cd veterinary-system-api
+./mvnw -B verify
+```
+
+En Windows PowerShell tambien se puede usar `mvnw.cmd -B verify`.
+
 Ver estado y salud:
 
 ```powershell
