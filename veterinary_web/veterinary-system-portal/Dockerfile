@@ -12,6 +12,10 @@ RUN npm run build -- --configuration production
 # ── Etapa 2: Imagen final ────────────────────────────────────────────────────
 FROM nginxinc/nginx-unprivileged:1.27-alpine
 
+USER root
+RUN apk upgrade --no-cache
+USER 101
+
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist/frontend-unab /usr/share/nginx/html
 
