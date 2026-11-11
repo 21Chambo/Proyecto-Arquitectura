@@ -26,6 +26,7 @@ Cuando los servicios esten listos, abre:
 - Portal web: <http://localhost:3000>
 - Swagger UI: <http://localhost:9090/swagger-ui.html>
 - OpenAPI JSON: <http://localhost:9090/v3/api-docs>
+- Health check: <http://localhost:9090/api/health>
 
 El puerto `9090` corresponde a la API, no al portal. Abrir `http://localhost:9090/` puede mostrar un 404 porque la API no sirve una pagina web en la ruta raiz.
 

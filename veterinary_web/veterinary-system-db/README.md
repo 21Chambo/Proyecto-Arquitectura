@@ -2,7 +2,6 @@
 Responsabilidad aislada de la base de datos del Sistema Veterinario.
 
 ## Contenido
-- `docker-compose.yml`: levanta MySQL para el proyecto.
 - `db/migration/`: migraciones versionadas para Flyway.
 - `db/rollback/`: rollback manual por version.
 - `db/CHANGELOG_DB.md`: historial de cambios SQL.
@@ -10,9 +9,11 @@ Responsabilidad aislada de la base de datos del Sistema Veterinario.
 - `flyway.conf.example`: configuracion base de Flyway sin credenciales reales.
 
 ## Uso
+
+Desde `veterinary_web`, ejecuta los comandos con el Compose compartido.
+
 ```bash
-docker network create veterinary-system-network
-docker compose up -d
+docker compose up -d db flyway
 ```
 
 `db_unab` se crea desde la configuracion de MySQL usando `MYSQL_DATABASE` del archivo `.env`. Las migraciones Flyway no crean la base; crean y versionan el esquema dentro de `db_unab`.
@@ -20,7 +21,7 @@ MySQL se publica en `localhost:13306` por defecto; se puede cambiar con `MYSQL_P
 
 ## Comandos basicos
 ```bash
-docker compose run --rm flyway migrate 
+docker compose run --rm flyway migrate
 docker compose run --rm flyway info
 docker compose run --rm flyway validate
 ```

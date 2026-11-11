@@ -4,7 +4,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Run `npm ci` and `npm start` from this directory with the API running. Angular CLI proxies `/api` to port `9090` by default. Set `API_PORT` in the Angular terminal if the API uses a different host port. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 
@@ -50,20 +50,17 @@ For local validation of ADR-011, the Nginx container can terminate TLS with a se
 powershell -ExecutionPolicy Bypass -File .\scripts\generate-local-cert.ps1
 ```
 
-2. Make sure the shared Docker network exists:
+2. From the parent directory (`veterinary_web`), start the stack with the local HTTPS override:
 ```bash
-docker network create veterinary-system-network
+docker compose -f docker-compose.yml -f veterinary-system-portal/docker-compose.local-https.yml up -d --build
 ```
 
-3. Start the portal with the local HTTPS override:
-```bash
-docker compose -f docker-compose.yml -f docker-compose.local-https.yml up -d --build
-```
-
-4. Open:
+3. Open:
 ```text
 https://localhost:3443
 ```
+
+HTTP stays available on the regular portal port. Set `PORTAL_HTTPS_PORT` to change the HTTPS host port.
 
 The browser will warn that the certificate is self-signed. This setup is only for local or pre-production validation and is not intended for real public deployments.
 
