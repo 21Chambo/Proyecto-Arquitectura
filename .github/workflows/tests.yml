@@ -8,6 +8,15 @@ permissions:
   contents: read
 
 jobs:
+  production-compose:
+    name: Production Compose contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validar secretos obligatorios y puertos privados
+        run: python3 veterinary_web/scripts/test_production_compose.py
+
   api:
     name: API - Linux / Java 17
     runs-on: ubuntu-latest
@@ -34,7 +43,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: '18'
+          node-version: '24'
           cache: npm
           cache-dependency-path: veterinary_web/veterinary-system-portal/package-lock.json
       - name: Preparar Chrome

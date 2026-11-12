@@ -5,6 +5,7 @@ import { HelperService, MessageType } from '../../utils/services/helper.service'
 import { LoginService } from './login.service';
 
 @Component({
+  standalone: false,
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']

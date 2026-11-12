@@ -4,6 +4,7 @@ import { HelperService } from '../../../utils/services/helper.service';
 import { TeamsService } from '../teams.service';
 
 @Component({
+  standalone: false,
   selector: 'app-team-index',
   templateUrl: './team-index.component.html',
   styleUrls: ['./team-index.component.css']

@@ -1,14 +1,14 @@
 import { Location } from '@angular/common';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { NotificationService } from '../../services/notification.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HelperService {
 
-  constructor(private router: Router, public location: Location, private toast: ToastrService) {}
+  constructor(private router: Router, public location: Location, private toast: NotificationService) {}
 
   redirectApp(url: string): void {
     this.router.navigate([url]);

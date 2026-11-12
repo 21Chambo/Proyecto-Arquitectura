@@ -1,6 +1,6 @@
-# ── Etapa 1: Compilación ─────────────────────────────────────────────────────
-# Node 18 LTS soportado; --openssl-legacy-provider lo requiere Angular 10 / webpack 4.
-FROM node:18-alpine AS build
+# â”€â”€ Etapa 1: CompilaciÃ³n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Node 24 LTS compatible con Angular 22.
+FROM node:24-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -9,8 +9,8 @@ RUN npm ci
 COPY . .
 RUN npm run build -- --configuration production
 
-# ── Etapa 2: Imagen final ────────────────────────────────────────────────────
-FROM nginxinc/nginx-unprivileged:1.27-alpine
+# â”€â”€ Etapa 2: Imagen final â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+FROM nginx/nginx-unprivileged:1.30.6-alpine
 
 USER root
 RUN apk upgrade --no-cache

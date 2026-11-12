@@ -1,5 +1,8 @@
 # Secretos y variables de entorno
 .env
+.env.*
+!.env.example
+!.env.prod.example
 
 # Logs de compilación y ejecución
 *.log

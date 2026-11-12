@@ -4,7 +4,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ToastrModule } from 'ngx-toastr';
 
 import { TeamFormComponent } from './team-form.component';
 
@@ -14,7 +13,7 @@ describe('TeamFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, ReactiveFormsModule, RouterTestingModule, ToastrModule.forRoot()],
+      imports: [HttpClientTestingModule, ReactiveFormsModule, RouterTestingModule],
       declarations: [ TeamFormComponent ],
       providers: [
         {

@@ -7,6 +7,7 @@ import { PetService } from '../../services/pet.service';
 import { TreatmentService } from '../../services/treatment.service';
 
 @Component({
+  standalone: false,
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']

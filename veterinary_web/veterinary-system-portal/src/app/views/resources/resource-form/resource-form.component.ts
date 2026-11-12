@@ -6,6 +6,7 @@ import { HelperService, MessageType } from '../../../utils/services/helper.servi
 import { ResourceConfig, ResourceFieldConfig, ResourceRegistryService, SelectOption } from '../../../services/resource-registry.service';
 
 @Component({
+  standalone: false,
   selector: 'app-resource-form',
   templateUrl: './resource-form.component.html',
   styleUrls: ['./resource-form.component.css']

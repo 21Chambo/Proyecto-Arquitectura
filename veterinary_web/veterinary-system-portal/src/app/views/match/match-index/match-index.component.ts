@@ -3,6 +3,7 @@ import { HelperService } from '../../../utils/services/helper.service';
 import { MatchListItem, MatchsService } from '../matchs.service';
 
 @Component({
+  standalone: false,
   selector: 'app-match-index',
   templateUrl: './match-index.component.html',
   styleUrls: ['./match-index.component.css']
