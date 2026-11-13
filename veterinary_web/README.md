@@ -190,6 +190,12 @@ el usuario sin privilegios. Publicar `80:80` impediria acceder al servidor actua
 Todos los servicios rotan logs a `10m`, con tres archivos. DB, API y portal usan
 `restart: unless-stopped`; Flyway se ejecuta una vez y no se reinicia en bucle.
 
+`GET /api/health` comprueba la base de datos y devuelve la version desplegada.
+En produccion, Compose transmite `TAG` como `APP_VERSION`, de modo que la respuesta
+identifica las mismas imagenes que se estan ejecutando. En desarrollo se usa
+`APP_VERSION` de `.env`, con `dev` como valor predeterminado.
+El proxy HTTP y el HTTPS local usan la ruta `/api/` sin reescribir `/api/api/`.
+
 El proyecto de produccion se llama `veterinary-production` y usa su propio volumen
 `veterinary-production_mysql_data`; no reutiliza `veterinary-mysql-data` de desarrollo.
 Si ya existe una instalacion de produccion con el nombre anterior, respalda sus datos
