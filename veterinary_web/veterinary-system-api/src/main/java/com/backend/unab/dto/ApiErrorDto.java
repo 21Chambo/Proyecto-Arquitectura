@@ -1,6 +1,7 @@
 package com.backend.unab.dto;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public class ApiErrorDto {
 
@@ -9,6 +10,10 @@ public class ApiErrorDto {
 	private String error;
 	private String message;
 	private String path;
+	private Map<String, String> fieldErrors;
+
+	public Map<String, String> getFieldErrors() { return fieldErrors; }
+	public void setFieldErrors(Map<String, String> fieldErrors) { this.fieldErrors = fieldErrors; }
 
 	public ApiErrorDto() {
 	}

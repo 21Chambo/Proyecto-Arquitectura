@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.backend.unab.dto.VeterinarianDto;
 import com.backend.unab.exception.ResourceNotFoundException;
@@ -24,7 +23,6 @@ public class VeterinarianServiceImpl implements IVeterinarianService {
 	@Override
 	@Transactional
 	public VeterinarianDto create(VeterinarianDto veterinarianDto) {
-		validate(veterinarianDto);
 		Veterinarian veterinarian = new Veterinarian();
 		applyChanges(veterinarian, veterinarianDto);
 		return toDto(veterinarianDao.save(veterinarian));
@@ -33,7 +31,6 @@ public class VeterinarianServiceImpl implements IVeterinarianService {
 	@Override
 	@Transactional
 	public VeterinarianDto update(Long id, VeterinarianDto veterinarianDto) {
-		validate(veterinarianDto);
 		Veterinarian veterinarian = findEntity(id);
 		applyChanges(veterinarian, veterinarianDto);
 		return toDto(veterinarianDao.save(veterinarian));
@@ -62,17 +59,6 @@ public class VeterinarianServiceImpl implements IVeterinarianService {
 				.orElseThrow(() -> new ResourceNotFoundException("Veterinarian with id " + id + " not found"));
 	}
 
-	private void validate(VeterinarianDto veterinarianDto) {
-		if (veterinarianDto == null) {
-			throw new IllegalArgumentException("Veterinarian payload is required");
-		}
-		if (!StringUtils.hasText(veterinarianDto.getFullName())) {
-			throw new IllegalArgumentException("Veterinarian full name is required");
-		}
-		if (!StringUtils.hasText(veterinarianDto.getDocumentNumber())) {
-			throw new IllegalArgumentException("Veterinarian document number is required");
-		}
-	}
 
 	private void applyChanges(Veterinarian veterinarian, VeterinarianDto veterinarianDto) {
 		veterinarian.setFullName(veterinarianDto.getFullName().trim());

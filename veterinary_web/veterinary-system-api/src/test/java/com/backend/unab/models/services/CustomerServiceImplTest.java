@@ -53,12 +53,11 @@ class CustomerServiceImplTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenCreatePayloadIsInvalid() {
+	void shouldRejectInvalidDtoAtBoundary() {
 		CustomerDto payload = new CustomerDto();
 
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.create(payload));
+		com.backend.unab.dto.DtoValidationAssertions.assertRequired(payload, "fullName");
 
-		assertEquals("Customer full name is required", exception.getMessage());
 		verify(customerDao, never()).save(any(Customer.class));
 	}
 

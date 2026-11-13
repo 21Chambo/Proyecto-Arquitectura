@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HelperService, MessageType } from '../../../utils/services/helper.service';
 import { ResourceColumnConfig, ResourceConfig, ResourceRegistryService } from '../../../services/resource-registry.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
   selector: 'app-resource-index',
   templateUrl: './resource-index.component.html',

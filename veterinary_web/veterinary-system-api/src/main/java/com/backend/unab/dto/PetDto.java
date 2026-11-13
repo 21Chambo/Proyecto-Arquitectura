@@ -1,4 +1,8 @@
 package com.backend.unab.dto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -6,13 +10,18 @@ import java.time.LocalDateTime;
 public class PetDto {
 
 	private Long id;
+	@NotNull @Positive
 	private Long customerId;
 	private String customerFullName;
+	@NotNull @Positive
 	private Long breedId;
 	private String breedName;
+	@NotBlank @Size(max = 100)
 	private String name;
+	@Size(max = 20)
 	private String gender;
 	private LocalDate birthDate;
+	@Size(max = 60)
 	private String color;
 	private LocalDateTime createdAt;
 

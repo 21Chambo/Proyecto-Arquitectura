@@ -1,5 +1,7 @@
 package com.backend.unab.controllers;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -32,13 +34,13 @@ public class PetRestController {
 
 	@PostMapping("")
 	@Operation(summary = "Create a pet")
-	public ResponseEntity<PetDto> create(@RequestBody PetDto petDto) {
+	public ResponseEntity<PetDto> create(@Valid @RequestBody PetDto petDto) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(petService.create(petDto));
 	}
 
 	@PutMapping("{id}")
 	@Operation(summary = "Update a pet")
-	public ResponseEntity<PetDto> update(@PathVariable Long id, @RequestBody PetDto petDto) {
+	public ResponseEntity<PetDto> update(@PathVariable Long id, @Valid @RequestBody PetDto petDto) {
 		return ResponseEntity.ok(petService.update(id, petDto));
 	}
 

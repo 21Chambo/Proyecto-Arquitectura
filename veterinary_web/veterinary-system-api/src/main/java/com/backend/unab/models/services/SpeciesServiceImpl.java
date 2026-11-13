@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.backend.unab.dto.SpeciesDto;
 import com.backend.unab.exception.ResourceNotFoundException;
@@ -24,7 +23,6 @@ public class SpeciesServiceImpl implements ISpeciesService {
 	@Override
 	@Transactional
 	public SpeciesDto create(SpeciesDto speciesDto) {
-		validate(speciesDto);
 		Species species = new Species();
 		species.setName(speciesDto.getName().trim());
 		return toDto(speciesDao.save(species));
@@ -33,7 +31,6 @@ public class SpeciesServiceImpl implements ISpeciesService {
 	@Override
 	@Transactional
 	public SpeciesDto update(Long id, SpeciesDto speciesDto) {
-		validate(speciesDto);
 		Species species = findEntity(id);
 		species.setName(speciesDto.getName().trim());
 		return toDto(speciesDao.save(species));
@@ -62,11 +59,6 @@ public class SpeciesServiceImpl implements ISpeciesService {
 				.orElseThrow(() -> new ResourceNotFoundException("Species with id " + id + " not found"));
 	}
 
-	private void validate(SpeciesDto speciesDto) {
-		if (speciesDto == null || !StringUtils.hasText(speciesDto.getName())) {
-			throw new IllegalArgumentException("Species name is required");
-		}
-	}
 
 	private SpeciesDto toDto(Species species) {
 		SpeciesDto dto = new SpeciesDto();

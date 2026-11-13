@@ -1,14 +1,23 @@
 package com.backend.unab.dto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
 public class TreatmentDto {
 
 	private Long id;
+	@NotNull @Positive
 	private Long medicalRecordId;
+	@NotBlank @Size(max = 65535)
 	private String description;
+	@Size(max = 150)
 	private String medication;
+	@Size(max = 100)
 	private String dosage;
+	@Size(max = 100)
 	private String duration;
 	private LocalDateTime createdAt;
 

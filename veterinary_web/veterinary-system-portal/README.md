@@ -13,7 +13,7 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 ## Build
 
-Run `npm run build -- --configuration production`. Files are written directly to `dist/frontend-unab`, which is also copied into the Nginx image. Bootstrap 5 and Font Awesome replace the unused AdminLTE/jQuery/DataTables bundle. Notifications use Angular text interpolation and expire after five seconds.
+Run `npm run build -- --configuration production`. Files are written directly to `dist/veterinary-system-portal`, which is also copied into the Nginx image. Bootstrap 5 and Font Awesome replace the unused AdminLTE/jQuery/DataTables bundle. Notifications use Angular text interpolation and expire after five seconds.
 
 ## Production deployment
 
@@ -33,7 +33,7 @@ Recommended production flow:
 npm run build -- --configuration production
 ```
 
-2. Publish the generated `dist/frontend-unab` files to S3.
+2. Publish the generated `dist/veterinary-system-portal` files to S3.
 
 3. Configure CloudFront to:
 - serve the SPA from the S3 origin

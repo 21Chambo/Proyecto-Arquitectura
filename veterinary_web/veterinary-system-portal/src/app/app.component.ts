@@ -1,4 +1,4 @@
-import { Component, DoCheck, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DoCheck, Inject } from '@angular/core';
 import { NotificationService } from './services/notification.service';
 import { DOCUMENT } from '@angular/common';
 import { Router } from '@angular/router';
@@ -6,6 +6,7 @@ import { ResourceNavigationItem, ResourceRegistryService } from './services/reso
 import { LoginService } from './views/login/login.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
   selector: 'app-root',
   templateUrl: './app.component.html',

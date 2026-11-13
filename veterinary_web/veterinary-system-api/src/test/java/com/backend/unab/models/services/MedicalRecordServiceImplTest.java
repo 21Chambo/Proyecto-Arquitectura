@@ -66,12 +66,11 @@ class MedicalRecordServiceImplTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenCreatePayloadIsInvalid() {
+	void shouldRejectInvalidDtoAtBoundary() {
 		MedicalRecordDto payload = new MedicalRecordDto();
 
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.create(payload));
+		com.backend.unab.dto.DtoValidationAssertions.assertRequired(payload, "appointmentId");
 
-		assertEquals("Appointment id is required", exception.getMessage());
 		verify(medicalRecordDao, never()).save(any(MedicalRecord.class));
 	}
 

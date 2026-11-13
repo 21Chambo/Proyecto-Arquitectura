@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthLoginRequest } from '../../models/auth-login-request.model';
 import { HelperService, MessageType } from '../../utils/services/helper.service';
 import { LoginService } from './login.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
   selector: 'app-login',
   templateUrl: './login.component.html',

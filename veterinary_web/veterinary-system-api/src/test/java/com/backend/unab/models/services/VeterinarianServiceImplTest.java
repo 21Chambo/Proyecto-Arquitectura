@@ -52,12 +52,11 @@ class VeterinarianServiceImplTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenCreatePayloadIsInvalid() {
+	void shouldRejectInvalidDtoAtBoundary() {
 		VeterinarianDto payload = new VeterinarianDto();
 
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.create(payload));
+		com.backend.unab.dto.DtoValidationAssertions.assertRequired(payload, "fullName");
 
-		assertEquals("Veterinarian full name is required", exception.getMessage());
 		verify(veterinarianDao, never()).save(any(Veterinarian.class));
 	}
 

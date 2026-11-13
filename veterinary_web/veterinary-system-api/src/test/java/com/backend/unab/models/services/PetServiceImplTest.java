@@ -69,12 +69,11 @@ class PetServiceImplTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenCreatePayloadIsInvalid() {
+	void shouldRejectInvalidDtoAtBoundary() {
 		PetDto payload = new PetDto();
 
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.create(payload));
+		com.backend.unab.dto.DtoValidationAssertions.assertRequired(payload, "name");
 
-		assertEquals("Pet name is required", exception.getMessage());
 		verify(petDao, never()).save(any(Pet.class));
 	}
 

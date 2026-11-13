@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.backend.unab.dto.CustomerDto;
 import com.backend.unab.exception.ResourceNotFoundException;
@@ -24,7 +23,6 @@ public class CustomerServiceImpl implements ICustomerService {
 	@Override
 	@Transactional
 	public CustomerDto create(CustomerDto customerDto) {
-		validate(customerDto);
 		Customer customer = new Customer();
 		applyChanges(customer, customerDto);
 		return toDto(customerDao.save(customer));
@@ -33,7 +31,6 @@ public class CustomerServiceImpl implements ICustomerService {
 	@Override
 	@Transactional
 	public CustomerDto update(Long id, CustomerDto customerDto) {
-		validate(customerDto);
 		Customer customer = findEntity(id);
 		applyChanges(customer, customerDto);
 		return toDto(customerDao.save(customer));
@@ -62,17 +59,6 @@ public class CustomerServiceImpl implements ICustomerService {
 				.orElseThrow(() -> new ResourceNotFoundException("Customer with id " + id + " not found"));
 	}
 
-	private void validate(CustomerDto customerDto) {
-		if (customerDto == null) {
-			throw new IllegalArgumentException("Customer payload is required");
-		}
-		if (!StringUtils.hasText(customerDto.getFullName())) {
-			throw new IllegalArgumentException("Customer full name is required");
-		}
-		if (!StringUtils.hasText(customerDto.getDocumentNumber())) {
-			throw new IllegalArgumentException("Customer document number is required");
-		}
-	}
 
 	private void applyChanges(Customer customer, CustomerDto customerDto) {
 		customer.setFullName(customerDto.getFullName().trim());

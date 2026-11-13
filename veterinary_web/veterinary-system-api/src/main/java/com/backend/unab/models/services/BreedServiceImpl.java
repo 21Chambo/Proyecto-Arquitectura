@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.backend.unab.dto.BreedDto;
 import com.backend.unab.exception.ResourceNotFoundException;
@@ -28,7 +27,6 @@ public class BreedServiceImpl implements IBreedService {
 	@Override
 	@Transactional
 	public BreedDto create(BreedDto breedDto) {
-		validate(breedDto);
 		Breed breed = new Breed();
 		breed.setName(breedDto.getName().trim());
 		breed.setSpecies(findSpecies(breedDto.getSpeciesId()));
@@ -38,7 +36,6 @@ public class BreedServiceImpl implements IBreedService {
 	@Override
 	@Transactional
 	public BreedDto update(Long id, BreedDto breedDto) {
-		validate(breedDto);
 		Breed breed = findEntity(id);
 		breed.setName(breedDto.getName().trim());
 		breed.setSpecies(findSpecies(breedDto.getSpeciesId()));
@@ -76,14 +73,6 @@ public class BreedServiceImpl implements IBreedService {
 				.orElseThrow(() -> new ResourceNotFoundException("Species with id " + id + " not found"));
 	}
 
-	private void validate(BreedDto breedDto) {
-		if (breedDto == null || !StringUtils.hasText(breedDto.getName())) {
-			throw new IllegalArgumentException("Breed name is required");
-		}
-		if (breedDto.getSpeciesId() == null) {
-			throw new IllegalArgumentException("Species id is required");
-		}
-	}
 
 	private BreedDto toDto(Breed breed) {
 		BreedDto dto = new BreedDto();

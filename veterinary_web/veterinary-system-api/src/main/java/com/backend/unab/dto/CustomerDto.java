@@ -1,14 +1,22 @@
 package com.backend.unab.dto;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
 public class CustomerDto {
 
 	private Long id;
+	@NotBlank @Size(max = 120)
 	private String fullName;
+	@NotBlank @Size(max = 30)
 	private String documentNumber;
+	@Size(max = 30)
 	private String phone;
+	@Email @Size(max = 120)
 	private String email;
+	@Size(max = 200)
 	private String address;
 	private LocalDateTime createdAt;
 

@@ -17,9 +17,14 @@ Copy-Item .env.example .env
 ```
 
 Edita `.env` y define valores propios para `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`,
-`APP_INITIAL_ADMIN_PASSWORD` y `APP_INITIAL_STAFF_PASSWORD`. Las claves de acceso
+`APP_INITIAL_ADMIN_PASSWORD`, `APP_INITIAL_STAFF_PASSWORD` y `APP_JWT_SECRET`. Las claves de acceso
 deben ser distintas, tener al menos 12 caracteres y no superar 72 bytes UTF-8.
 No uses contrasenas vacias. Compose crea automaticamente la red. Inicia el sistema:
+
+`APP_JWT_SECRET` debe contener al menos 32 bytes aleatorios codificados en Base64.
+Puedes generar una clave con `openssl rand -base64 32` y copiarla solo a tu `.env`
+privado. No uses las contrasenas de los usuarios como clave de firma. El API rechaza
+claves de firma vacias, mal codificadas o demasiado cortas.
 
 Si una clave contiene `$`, `#` o espacios, escribela entre comillas simples en
 `.env` para conservar su valor literal. No compartas ni subas ese archivo a Git.
@@ -171,11 +176,11 @@ Las variables estan documentadas en `.env.example`:
 - `API_PORT` cambia el puerto de la API; por defecto es `9090`.
 - `PORTAL_PORT` cambia el puerto del portal; por defecto es `3000`.
 
-Las contraseñas no tienen valores predeterminados. Usa credenciales propias y no publiques archivos `.env` con secretos; `.env` está excluido de Git.
+Las contraseÃ±as no tienen valores predeterminados. Usa credenciales propias y no publiques archivos `.env` con secretos; `.env` estÃ¡ excluido de Git.
 
-## Despliegue en producción
+## Despliegue en producciÃ³n
 
-El archivo `compose.prod.yml` usa imagenes publicadas en GHCR y no construye imagenes en la instancia. Copia `.env.prod.example` como `.env.prod` y define `TAG`, `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, `APP_INITIAL_ADMIN_PASSWORD` y `APP_INITIAL_STAFF_PASSWORD`. Las variables ausentes o vacias impiden validar o iniciar Compose. Usa claves unicas para produccion, distintas de las de desarrollo. `TAG` debe ser el SHA de un commit cuyas imagenes hayan sido publicadas y escaneadas. `MYSQL_DATABASE` y `MYSQL_USER` pueden conservar sus valores de ejemplo:
+El archivo `compose.prod.yml` usa imagenes publicadas en GHCR y no construye imagenes en la instancia. Copia `.env.prod.example` como `.env.prod` y define `TAG`, `APP_JWT_SECRET`, `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, `APP_INITIAL_ADMIN_PASSWORD`, `APP_INITIAL_STAFF_PASSWORD` y `APP_CORS_ALLOWED_ORIGINS`. Las variables ausentes o vacias impiden validar o iniciar Compose. Usa claves unicas para produccion, distintas de las de desarrollo. `TAG` debe ser el SHA de un commit cuyas imagenes hayan sido publicadas y escaneadas. `MYSQL_DATABASE` y `MYSQL_USER` pueden conservar sus valores de ejemplo:
 
 ```sh
 docker compose --env-file .env.prod -f compose.prod.yml config --quiet
@@ -183,7 +188,7 @@ docker compose --env-file .env.prod -f compose.prod.yml pull
 docker compose --env-file .env.prod -f compose.prod.yml up -d --wait
 ```
 
-En produccion solo se publica el portal en el puerto `80`; la API y MySQL quedan sin puertos publicados. La inicializacion de credenciales es automatica y sigue las mismas reglas descritas arriba. Conserva el volumen de MySQL: volver a descargar el repositorio no elimina ni restablece las credenciales de una base existente. Configura HTTPS en el balanceador o proxy de AWS antes de exponer el login: la autenticacion actual usa Basic Auth y requiere cifrado en transito.
+En produccion solo se publica el portal en el puerto `80`; la API y MySQL quedan sin puertos publicados. La inicializacion de credenciales es automatica y sigue las mismas reglas descritas arriba. Conserva el volumen de MySQL: volver a descargar el repositorio no elimina ni restablece las credenciales de una base existente. Configura HTTPS en el balanceador o proxy antes de exponer el login: las contrasenas del login y los tokens Bearer requieren cifrado en transito.
 
 El mapeo es `80:8080`: Nginx escucha en `8080` dentro del contenedor para mantener
 el usuario sin privilegios. Publicar `80:80` impediria acceder al servidor actual.
@@ -241,7 +246,37 @@ trivy image --severity CRITICAL --exit-code 1 veterinary-api:verification
 
 El filtro `CRITICAL` no certifica ausencia de vulnerabilidades de menor severidad.
 El escaneo del codigo en CI tambien incluye las dependencias de desarrollo.
-La suite actual del API tiene 88 pruebas, mas que los 81 casos del enunciado original.
+La suite actual del API incluye las pruebas originales y los nuevos casos de JWT,
+validacion declarativa y manejo seguro de errores. Ejecuta `./mvnw -B verify` para
+comprobar el total vigente.
+
+## Sesiones y validacion (cambios 10 a 13)
+
+El login devuelve un JWT firmado con `tokenType: Bearer` y `accessToken` sin prefijo.
+Las peticiones posteriores usan `Authorization: Bearer <accessToken>`; el token
+incluye usuario, nombre y roles, nunca la contrasena. `APP_JWT_TTL_SECONDS` vale 900
+por defecto y admite de 60 a 3600 segundos. La API comprueba firma, emisor y fechas;
+un token vencido o alterado devuelve 401. Los errores internos de autenticacion
+conservan HTTP 500 con el mensaje fijo `Error inesperado`, sin detalles internos.
+
+El portal conserva solo el JWT en `sessionStorage`, elimina las antiguas credenciales
+Basic de `localStorage` y pide iniciar sesion de nuevo al expirar. Las contrasenas
+almacenadas en la base no cambian. Cerrar sesion borra el token de ese navegador;
+una copia del token sigue siendo valida hasta su vencimiento. Cambiar la clave de
+firma invalida los tokens emitidos con la anterior; usa claves diferentes por ambiente.
+
+Produccion tambien exige `APP_JWT_SECRET` en `.env.prod`. No publiques ese archivo.
+Configura tambien `APP_CORS_ALLOWED_ORIGINS` con el origen publico exacto del portal
+(por ejemplo `https://tu-dominio.example`, sin barra final). Se pueden separar
+varios origenes con comas. Compose lo transmite a la API y rechaza el valor vacio;
+una URL no autorizada recibe 403 antes del login.
+Los DTO declaran campos obligatorios, limites de longitud y formato de correo.
+Una entrada invalida devuelve 400 con `fieldErrors`, sin llegar a la persistencia;
+las reglas que dependen de datos existentes permanecen en los servicios.
+
+Los artefactos se llaman `veterinary-system-api` y `veterinary-system-portal`.
+Se retiran las pantallas y entidades heredadas de partidos, equipos y registro.
+El paquete Java existente se conserva para evitar mezclar una migracion adicional.
 
 ## Relaciones y eliminaciones
 

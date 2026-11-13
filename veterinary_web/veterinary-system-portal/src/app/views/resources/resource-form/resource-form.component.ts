@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
@@ -6,6 +6,7 @@ import { HelperService, MessageType } from '../../../utils/services/helper.servi
 import { ResourceConfig, ResourceFieldConfig, ResourceRegistryService, SelectOption } from '../../../services/resource-registry.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
   selector: 'app-resource-form',
   templateUrl: './resource-form.component.html',

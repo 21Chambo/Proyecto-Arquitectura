@@ -1,8 +1,11 @@
 package com.backend.unab.dto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class SpeciesDto {
 
 	private Long id;
+	@NotBlank @Size(max = 80)
 	private String name;
 
 	public Long getId() {

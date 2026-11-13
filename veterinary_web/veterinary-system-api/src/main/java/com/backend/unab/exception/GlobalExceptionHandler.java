@@ -1,6 +1,8 @@
 package com.backend.unab.exception;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -10,11 +12,14 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AccountStatusException;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import com.backend.unab.dto.ApiErrorDto;
 
@@ -23,10 +28,29 @@ public class GlobalExceptionHandler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-	@ExceptionHandler({BadCredentialsException.class, AccountStatusException.class, UsernameNotFoundException.class})
+	@ExceptionHandler(AuthenticationException.class)
 	public ResponseEntity<ApiErrorDto> handleAuthentication(AuthenticationException ex, HttpServletRequest request) {
 		LOGGER.warn("Rejected authentication for path {}", request.getRequestURI());
 		return buildResponse(HttpStatus.UNAUTHORIZED, "Usuario o contrasena invalidos.", request.getRequestURI());
+	}
+
+	@ExceptionHandler(AuthenticationServiceException.class)
+	public ResponseEntity<ApiErrorDto> handleAuthenticationService(AuthenticationServiceException ex, HttpServletRequest request) {
+		return handleUnexpected(ex, request);
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ApiErrorDto> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
+		Map<String, String> fields = new LinkedHashMap<>();
+		ex.getBindingResult().getFieldErrors().forEach(error -> fields.putIfAbsent(error.getField(), error.getDefaultMessage()));
+		ApiErrorDto body = new ApiErrorDto(LocalDateTime.now(), 400, "Bad Request", "Datos de entrada invalidos.", request.getRequestURI());
+		body.setFieldErrors(fields);
+		return ResponseEntity.badRequest().body(body);
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<ApiErrorDto> handleUnreadable(HttpMessageNotReadableException ex, HttpServletRequest request) {
+		return buildResponse(HttpStatus.BAD_REQUEST, "Cuerpo de solicitud invalido.", request.getRequestURI());
 	}
 
 	@ExceptionHandler(ResourceNotFoundException.class)
@@ -83,7 +107,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiErrorDto> handleUnexpected(Exception ex, HttpServletRequest request) {
 		LOGGER.error("Unexpected error for path {}", request.getRequestURI(), ex);
-		return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getRequestURI());
+		return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error inesperado", request.getRequestURI());
 	}
 
 	private ResponseEntity<ApiErrorDto> buildResponse(HttpStatus status, String message, String path) {
