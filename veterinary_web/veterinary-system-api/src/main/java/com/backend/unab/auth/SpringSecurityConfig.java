@@ -15,6 +15,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -45,6 +47,11 @@ public class SpringSecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		JwtGrantedAuthoritiesConverter roles = new JwtGrantedAuthoritiesConverter();
+		roles.setAuthoritiesClaimName("roles");
+		roles.setAuthorityPrefix("");
+		JwtAuthenticationConverter jwtAuthentication = new JwtAuthenticationConverter();
+		jwtAuthentication.setJwtGrantedAuthoritiesConverter(roles);
 		http.cors(Customizer.withDefaults())
 			.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -54,7 +61,10 @@ public class SpringSecurityConfig {
 				.requestMatchers(HttpMethod.GET, "/api/health").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 				.anyRequest().authenticated())
-			.httpBasic(Customizer.withDefaults());
+			.httpBasic(AbstractHttpConfigurer::disable)
+			.formLogin(AbstractHttpConfigurer::disable)
+			.oauth2ResourceServer(resourceServer -> resourceServer.jwt(jwt ->
+					jwt.jwtAuthenticationConverter(jwtAuthentication)));
 		return http.build();
 	}
 

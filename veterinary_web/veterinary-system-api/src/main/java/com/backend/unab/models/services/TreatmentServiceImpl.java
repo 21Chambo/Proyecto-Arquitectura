@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.backend.unab.dto.TreatmentDto;
 import com.backend.unab.exception.ResourceNotFoundException;
@@ -28,7 +27,6 @@ public class TreatmentServiceImpl implements ITreatmentService {
 	@Override
 	@Transactional
 	public TreatmentDto create(TreatmentDto treatmentDto) {
-		validate(treatmentDto);
 		Treatment treatment = new Treatment();
 		applyChanges(treatment, treatmentDto);
 		return toDto(treatmentDao.save(treatment));
@@ -37,7 +35,6 @@ public class TreatmentServiceImpl implements ITreatmentService {
 	@Override
 	@Transactional
 	public TreatmentDto update(Long id, TreatmentDto treatmentDto) {
-		validate(treatmentDto);
 		Treatment treatment = findEntity(id);
 		applyChanges(treatment, treatmentDto);
 		return toDto(treatmentDao.save(treatment));
@@ -74,17 +71,6 @@ public class TreatmentServiceImpl implements ITreatmentService {
 				.orElseThrow(() -> new ResourceNotFoundException("Medical record with id " + id + " not found"));
 	}
 
-	private void validate(TreatmentDto treatmentDto) {
-		if (treatmentDto == null) {
-			throw new IllegalArgumentException("Treatment payload is required");
-		}
-		if (treatmentDto.getMedicalRecordId() == null) {
-			throw new IllegalArgumentException("Medical record id is required");
-		}
-		if (!StringUtils.hasText(treatmentDto.getDescription())) {
-			throw new IllegalArgumentException("Treatment description is required");
-		}
-	}
 
 	private void applyChanges(Treatment treatment, TreatmentDto treatmentDto) {
 		treatment.setMedicalRecord(findMedicalRecord(treatmentDto.getMedicalRecordId()));

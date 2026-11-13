@@ -1,7 +1,5 @@
 package com.backend.unab.controllers;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.unab.dto.AuthLoginRequestDto;
+import com.backend.unab.auth.JwtTokenService;
+import jakarta.validation.Valid;
 import com.backend.unab.dto.AuthLoginResponseDto;
 import com.backend.unab.models.entity.User;
 import com.backend.unab.models.services.UsuarioService;
@@ -36,20 +36,18 @@ public class AuthRestController {
 
 	private final AuthenticationManager authenticationManager;
 	private final UsuarioService usuarioService;
+	private final JwtTokenService tokens;
 
-	public AuthRestController(AuthenticationManager authenticationManager, UsuarioService usuarioService) {
+	public AuthRestController(AuthenticationManager authenticationManager, UsuarioService usuarioService, JwtTokenService tokens) {
 		this.authenticationManager = authenticationManager;
 		this.usuarioService = usuarioService;
+		this.tokens = tokens;
 	}
 
 	@PostMapping("/login")
-	@Operation(summary = "Authenticate a user and return a Basic Auth token")
+	@Operation(summary = "Authenticate a user and return an expiring signed JWT")
 	@SecurityRequirements
-	public ResponseEntity<AuthLoginResponseDto> login(@RequestBody AuthLoginRequestDto request) {
-		if (request == null || !StringUtils.hasText(request.getUsername()) || !StringUtils.hasText(request.getPassword())) {
-			LOGGER.warn("Rejected authentication request because required credentials were missing");
-			throw new IllegalArgumentException("Username and password are required");
-		}
+	public ResponseEntity<AuthLoginResponseDto> login(@Valid @RequestBody AuthLoginRequestDto request) {
 
 		Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(request.getUsername().trim(), request.getPassword()));
@@ -59,14 +57,13 @@ public class AuthRestController {
 
 		User user = usuarioService.findEntityByUsername(request.getUsername().trim());
 
-		String rawToken = request.getUsername().trim() + ":" + request.getPassword();
-		String accessToken = "Basic " + Base64.getEncoder().encodeToString(rawToken.getBytes(StandardCharsets.UTF_8));
+		String accessToken = tokens.issue(user.getUsername(), user.getFullName(), roles);
 
 		AuthLoginResponseDto response = new AuthLoginResponseDto();
 		response.setUsername(user.getUsername());
 		response.setFullName(user.getFullName());
 		response.setRoles(roles);
-		response.setTokenType("Basic");
+		response.setTokenType("Bearer");
 		response.setAccessToken(accessToken);
 
 		LOGGER.info("Authentication succeeded");

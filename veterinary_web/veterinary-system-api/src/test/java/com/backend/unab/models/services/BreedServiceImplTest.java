@@ -58,10 +58,9 @@ class BreedServiceImplTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenCreatePayloadIsInvalid() {
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.create(new BreedDto()));
+	void shouldRejectInvalidDtoAtBoundary() {
+		com.backend.unab.dto.DtoValidationAssertions.assertRequired(new BreedDto(), "name");
 
-		assertEquals("Breed name is required", exception.getMessage());
 		verify(breedDao, never()).save(any(Breed.class));
 	}
 

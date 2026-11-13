@@ -17,7 +17,7 @@ RUN apk upgrade --no-cache
 USER 101
 
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist/frontend-unab /usr/share/nginx/html
+COPY --from=build /app/dist/veterinary-system-portal /usr/share/nginx/html
 
 EXPOSE 8080
 

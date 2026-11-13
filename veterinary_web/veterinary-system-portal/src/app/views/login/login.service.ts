@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+﻿import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap, timeout } from 'rxjs/operators';
@@ -6,115 +6,64 @@ import { AuthLoginRequest } from '../../models/auth-login-request.model';
 import { AuthLoginResponse } from '../../models/auth-login-response.model';
 import { buildApiUrl } from '../../utils/api-url';
 
-@Injectable({
-  providedIn: 'root'
-})
+interface SessionClaims { exp: number; sub: string; fullName?: string; roles?: string[]; }
+
+@Injectable({ providedIn: 'root' })
 export class LoginService {
-  private readonly tokenKey = 'veterinary.token';
-  private readonly fullNameKey = 'veterinary.full_name';
-  private readonly rolesKey = 'veterinary.roles';
-  private readonly legacyTokenKey = 'token';
-  private readonly legacyFullNameKey = 'full_name';
-  private readonly legacyRolesKey = 'roles';
+  private readonly tokenKey = 'veterinary.jwt';
 
   constructor(private http: HttpClient) {
-    this.normalizeStoredSession();
+    // Never migrate the historical Basic tokens: they contain recoverable passwords.
+    for (const key of ['veterinary.token', 'veterinary.full_name', 'veterinary.roles', 'token', 'full_name', 'roles']) {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    }
+    this.getToken();
   }
 
-  getApiUrl(): string {
-    return buildApiUrl('/api');
-  }
+  getApiUrl(): string { return buildApiUrl('/api'); }
 
   login(payload: AuthLoginRequest): Observable<AuthLoginResponse> {
     return this.http.post<AuthLoginResponse>(buildApiUrl('/api/auth/login'), payload).pipe(
       timeout(5000),
-      tap((response) => this.persistSession(response))
+      tap(response => {
+        if (response.tokenType !== 'Bearer' || !this.readClaims(response.accessToken)) {
+          this.logout();
+          throw new Error('La respuesta de autenticacion no contiene una sesion valida.');
+        }
+        sessionStorage.setItem(this.tokenKey, response.accessToken);
+      })
     );
   }
 
-  logout(): void {
-    this.clearSession();
-  }
-
-  isAuthenticated(): boolean {
-    return !!this.getToken();
-  }
+  logout(): void { sessionStorage.removeItem(this.tokenKey); }
+  isAuthenticated(): boolean { return !!this.getToken(); }
 
   getToken(): string | null {
-    const token = localStorage.getItem(this.tokenKey);
-
-    if (!this.isSupportedToken(token)) {
-      this.clearSession();
-      return null;
-    }
-
+    const token = sessionStorage.getItem(this.tokenKey);
+    if (!this.readClaims(token)) { this.logout(); return null; }
     return token;
   }
 
   getFullName(): string {
-    return localStorage.getItem(this.fullNameKey) || '';
+    const claims = this.readClaims(this.getToken());
+    return claims?.fullName || claims?.sub || '';
   }
 
   getRoles(): string[] {
-    const rawRoles = localStorage.getItem(this.rolesKey);
+    const roles = this.readClaims(this.getToken())?.roles;
+    return Array.isArray(roles) ? roles.filter(role => typeof role === 'string') : [];
+  }
 
-    if (!rawRoles) {
-      return [];
-    }
-
+  private readClaims(token: string | null): SessionClaims | null {
     try {
-      const parsedRoles = JSON.parse(rawRoles);
-      return Array.isArray(parsedRoles) ? parsedRoles : [];
-    } catch {
-      this.clearSession();
-      return [];
-    }
-  }
-
-  private persistSession(response: AuthLoginResponse): void {
-    this.clearLegacySession();
-    localStorage.setItem(this.tokenKey, response.accessToken);
-    localStorage.setItem(this.fullNameKey, response.fullName);
-    localStorage.setItem(this.rolesKey, JSON.stringify(response.roles));
-  }
-
-  private normalizeStoredSession(): void {
-    const legacyToken = localStorage.getItem(this.legacyTokenKey);
-    const legacyFullName = localStorage.getItem(this.legacyFullNameKey);
-    const legacyRoles = localStorage.getItem(this.legacyRolesKey);
-    const namespacedToken = localStorage.getItem(this.tokenKey);
-
-    if (!namespacedToken && legacyToken && this.isSupportedToken(legacyToken)) {
-      localStorage.setItem(this.tokenKey, legacyToken);
-      if (legacyFullName) {
-        localStorage.setItem(this.fullNameKey, legacyFullName);
-      }
-      if (legacyRoles) {
-        localStorage.setItem(this.rolesKey, legacyRoles);
-      }
-    }
-
-    this.clearLegacySession();
-
-    if (!this.isSupportedToken(localStorage.getItem(this.tokenKey))) {
-      this.clearSession();
-    }
-  }
-
-  private isSupportedToken(token: string | null): boolean {
-    return !!token && token.startsWith('Basic ');
-  }
-
-  private clearSession(): void {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.fullNameKey);
-    localStorage.removeItem(this.rolesKey);
-    this.clearLegacySession();
-  }
-
-  private clearLegacySession(): void {
-    localStorage.removeItem(this.legacyTokenKey);
-    localStorage.removeItem(this.legacyFullNameKey);
-    localStorage.removeItem(this.legacyRolesKey);
+      if (!token || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token)) { return null; }
+      const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const bytes = Uint8Array.from(atob(part.padEnd(Math.ceil(part.length / 4) * 4, '=')), char => char.charCodeAt(0));
+      const claims = JSON.parse(new TextDecoder().decode(bytes));
+      // This is only a UI expiry check. The API verifies signature, issuer and timestamps.
+      return typeof claims.exp === 'number' && claims.exp * 1000 > Date.now() && typeof claims.sub === 'string'
+        ? claims : null;
+    } catch { return null; }
   }
 }

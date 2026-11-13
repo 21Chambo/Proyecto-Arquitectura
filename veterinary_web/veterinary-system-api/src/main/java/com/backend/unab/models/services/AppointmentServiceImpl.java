@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.backend.unab.dto.AppointmentDto;
 import com.backend.unab.exception.ResourceNotFoundException;
@@ -32,7 +31,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
 	@Override
 	@Transactional
 	public AppointmentDto create(AppointmentDto appointmentDto) {
-		validate(appointmentDto);
 		Appointment appointment = new Appointment();
 		applyChanges(appointment, appointmentDto);
 		return toDto(appointmentDao.save(appointment));
@@ -41,7 +39,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
 	@Override
 	@Transactional
 	public AppointmentDto update(Long id, AppointmentDto appointmentDto) {
-		validate(appointmentDto);
 		Appointment appointment = findEntity(id);
 		applyChanges(appointment, appointmentDto);
 		return toDto(appointmentDao.save(appointment));
@@ -85,26 +82,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
 				.orElseThrow(() -> new ResourceNotFoundException("Veterinarian with id " + id + " not found"));
 	}
 
-	private void validate(AppointmentDto appointmentDto) {
-		if (appointmentDto == null) {
-			throw new IllegalArgumentException("Appointment payload is required");
-		}
-		if (appointmentDto.getPetId() == null) {
-			throw new IllegalArgumentException("Pet id is required");
-		}
-		if (appointmentDto.getVeterinarianId() == null) {
-			throw new IllegalArgumentException("Veterinarian id is required");
-		}
-		if (appointmentDto.getAppointmentDateTime() == null) {
-			throw new IllegalArgumentException("Appointment date time is required");
-		}
-		if (!StringUtils.hasText(appointmentDto.getReason())) {
-			throw new IllegalArgumentException("Appointment reason is required");
-		}
-		if (!StringUtils.hasText(appointmentDto.getStatus())) {
-			throw new IllegalArgumentException("Appointment status is required");
-		}
-	}
 
 	private void applyChanges(Appointment appointment, AppointmentDto appointmentDto) {
 		appointment.setPet(findPet(appointmentDto.getPetId()));

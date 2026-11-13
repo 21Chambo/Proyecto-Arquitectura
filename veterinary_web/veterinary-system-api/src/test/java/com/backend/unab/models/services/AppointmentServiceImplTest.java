@@ -71,12 +71,11 @@ class AppointmentServiceImplTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenCreatePayloadIsInvalid() {
+	void shouldRejectInvalidDtoAtBoundary() {
 		AppointmentDto payload = new AppointmentDto();
 
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.create(payload));
+		com.backend.unab.dto.DtoValidationAssertions.assertRequired(payload, "petId");
 
-		assertEquals("Pet id is required", exception.getMessage());
 		verify(appointmentDao, never()).save(any(Appointment.class));
 	}
 

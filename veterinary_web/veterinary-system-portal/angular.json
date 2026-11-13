@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "frontend-unab": {
+    "veterinary-system-portal": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -14,7 +14,7 @@
           "builder": "@angular/build:application",
           "options": {
             "outputPath": {
-              "base": "dist/frontend-unab",
+              "base": "dist/veterinary-system-portal",
               "browser": ""
             },
             "index": "src/index.html",
@@ -76,10 +76,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "frontend-unab:build:production"
+              "buildTarget": "veterinary-system-portal:build:production"
             },
             "development": {
-              "buildTarget": "frontend-unab:build:development"
+              "buildTarget": "veterinary-system-portal:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -87,7 +87,7 @@
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n",
           "options": {
-            "buildTarget": "frontend-unab:build"
+            "buildTarget": "veterinary-system-portal:build"
           }
         },
         "test": {

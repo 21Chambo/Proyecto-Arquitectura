@@ -51,7 +51,8 @@ foreach ($account in @(
     if ($session.username -ne $credential.UserName -or $session.roles -notcontains $account.Role) {
         throw 'Login returned an unexpected account or role.'
     }
-    $null = Invoke-CheckedRequest -Path '/api/customers' -Method Get -ExpectedStatus 200 -Headers @{ Authorization = $session.accessToken }
+    if ($session.tokenType -ne 'Bearer') { throw 'Login must return a Bearer JWT.' }
+    $null = Invoke-CheckedRequest -Path '/api/customers' -Method Get -ExpectedStatus 200 -Headers @{ Authorization = "Bearer $($session.accessToken)" }
     Write-Output "PASS: $($credential.UserName) login, role and authenticated API access."
 
     $invalid = @{ username = $credential.UserName; password = [guid]::NewGuid().ToString('N') } | ConvertTo-Json

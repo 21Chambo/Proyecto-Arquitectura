@@ -1,4 +1,8 @@
 package com.backend.unab.dto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -6,8 +10,11 @@ import java.time.LocalDateTime;
 public class MedicalRecordDto {
 
 	private Long id;
+	@NotNull @Positive
 	private Long appointmentId;
+	@NotBlank @Size(max = 65535)
 	private String diagnosis;
+	@Size(max = 65535)
 	private String notes;
 	private BigDecimal weight;
 	private BigDecimal temperature;

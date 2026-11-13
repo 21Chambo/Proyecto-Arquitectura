@@ -50,10 +50,9 @@ class SpeciesServiceImplTest {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenCreatePayloadIsInvalid() {
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.create(new SpeciesDto()));
+	void shouldRejectInvalidDtoAtBoundary() {
+		com.backend.unab.dto.DtoValidationAssertions.assertRequired(new SpeciesDto(), "name");
 
-		assertEquals("Species name is required", exception.getMessage());
 		verify(speciesDao, never()).save(any(Species.class));
 	}
 

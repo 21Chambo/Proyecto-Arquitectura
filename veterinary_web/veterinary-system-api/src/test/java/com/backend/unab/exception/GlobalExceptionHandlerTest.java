@@ -21,6 +21,16 @@ import com.backend.unab.dto.ApiErrorDto;
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
 
+	@Test
+	void unexpectedErrorsNeverExposeDatabaseOrClassDetails() {
+		var handler = new GlobalExceptionHandler();
+		var request = org.mockito.Mockito.mock(jakarta.servlet.http.HttpServletRequest.class);
+		when(request.getRequestURI()).thenReturn("/api/pets");
+		var response = handler.handleUnexpected(new RuntimeException("SQL SELECT password FROM users; java.sql.Connection"), request);
+		assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+		assertEquals("Error inesperado", response.getBody().getMessage());
+	}
+
 	@Mock
 	private HttpServletRequest request;
 

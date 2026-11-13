@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.backend.unab.dto.PetDto;
 import com.backend.unab.exception.ResourceNotFoundException;
@@ -32,7 +31,6 @@ public class PetServiceImpl implements IPetService {
 	@Override
 	@Transactional
 	public PetDto create(PetDto petDto) {
-		validate(petDto);
 		Pet pet = new Pet();
 		applyChanges(pet, petDto);
 		return toDto(petDao.save(pet));
@@ -41,7 +39,6 @@ public class PetServiceImpl implements IPetService {
 	@Override
 	@Transactional
 	public PetDto update(Long id, PetDto petDto) {
-		validate(petDto);
 		Pet pet = findEntity(id);
 		applyChanges(pet, petDto);
 		return toDto(petDao.save(pet));
@@ -85,20 +82,6 @@ public class PetServiceImpl implements IPetService {
 				.orElseThrow(() -> new ResourceNotFoundException("Breed with id " + id + " not found"));
 	}
 
-	private void validate(PetDto petDto) {
-		if (petDto == null) {
-			throw new IllegalArgumentException("Pet payload is required");
-		}
-		if (!StringUtils.hasText(petDto.getName())) {
-			throw new IllegalArgumentException("Pet name is required");
-		}
-		if (petDto.getCustomerId() == null) {
-			throw new IllegalArgumentException("Customer id is required");
-		}
-		if (petDto.getBreedId() == null) {
-			throw new IllegalArgumentException("Breed id is required");
-		}
-	}
 
 	private void applyChanges(Pet pet, PetDto petDto) {
 		pet.setCustomer(findCustomer(petDto.getCustomerId()));

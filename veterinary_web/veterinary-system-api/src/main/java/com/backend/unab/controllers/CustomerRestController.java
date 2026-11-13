@@ -1,5 +1,7 @@
 package com.backend.unab.controllers;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -32,13 +34,13 @@ public class CustomerRestController {
 
 	@PostMapping("")
 	@Operation(summary = "Create a customer")
-	public ResponseEntity<CustomerDto> create(@RequestBody CustomerDto customerDto) {
+	public ResponseEntity<CustomerDto> create(@Valid @RequestBody CustomerDto customerDto) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(customerService.create(customerDto));
 	}
 
 	@PutMapping("{id}")
 	@Operation(summary = "Update a customer")
-	public ResponseEntity<CustomerDto> update(@PathVariable Long id, @RequestBody CustomerDto customerDto) {
+	public ResponseEntity<CustomerDto> update(@PathVariable Long id, @Valid @RequestBody CustomerDto customerDto) {
 		return ResponseEntity.ok(customerService.update(id, customerDto));
 	}
 

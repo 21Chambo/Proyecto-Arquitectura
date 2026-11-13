@@ -10,7 +10,7 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = (
     "MYSQL_ROOT_PASSWORD", "MYSQL_PASSWORD", "APP_INITIAL_ADMIN_PASSWORD",
-    "APP_INITIAL_STAFF_PASSWORD", "TAG",
+    "APP_INITIAL_STAFF_PASSWORD", "APP_JWT_SECRET", "APP_CORS_ALLOWED_ORIGINS", "TAG",
 )
 
 
@@ -23,6 +23,7 @@ def main():
     environment["APP_VERSION"] = "unrelated-host-version"
     values = {key: uuid.uuid4().hex for key in REQUIRED}
     values["TAG"] = "validation-only"
+    values["APP_CORS_ALLOWED_ORIGINS"] = "https://portal.example.invalid"
     with tempfile.TemporaryDirectory() as directory:
         empty_env = Path(directory) / "empty.env"
         empty_env.touch()
@@ -58,6 +59,7 @@ def main():
 
     services = config["services"]
     assert services["api"]["environment"]["APP_VERSION"] == values["TAG"], "Health version must match the deployed image tag"
+    assert services["api"]["environment"]["APP_CORS_ALLOWED_ORIGINS"] == values["APP_CORS_ALLOWED_ORIGINS"]
     for name, service in services.items():
         assert "build" not in service, f"{name} must use a published image"
         assert service.get("network_mode") != "host", f"{name} must use Docker networking"

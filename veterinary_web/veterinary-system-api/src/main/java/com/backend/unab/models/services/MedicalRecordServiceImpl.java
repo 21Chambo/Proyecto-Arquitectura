@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.backend.unab.dto.MedicalRecordDto;
 import com.backend.unab.exception.ResourceNotFoundException;
@@ -28,7 +27,6 @@ public class MedicalRecordServiceImpl implements IMedicalRecordService {
 	@Override
 	@Transactional
 	public MedicalRecordDto create(MedicalRecordDto medicalRecordDto) {
-		validate(medicalRecordDto);
 		MedicalRecord medicalRecord = new MedicalRecord();
 		applyChanges(medicalRecord, medicalRecordDto);
 		return toDto(medicalRecordDao.save(medicalRecord));
@@ -37,7 +35,6 @@ public class MedicalRecordServiceImpl implements IMedicalRecordService {
 	@Override
 	@Transactional
 	public MedicalRecordDto update(Long id, MedicalRecordDto medicalRecordDto) {
-		validate(medicalRecordDto);
 		MedicalRecord medicalRecord = findEntity(id);
 		applyChanges(medicalRecord, medicalRecordDto);
 		return toDto(medicalRecordDao.save(medicalRecord));
@@ -74,17 +71,6 @@ public class MedicalRecordServiceImpl implements IMedicalRecordService {
 				.orElseThrow(() -> new ResourceNotFoundException("Appointment with id " + id + " not found"));
 	}
 
-	private void validate(MedicalRecordDto medicalRecordDto) {
-		if (medicalRecordDto == null) {
-			throw new IllegalArgumentException("Medical record payload is required");
-		}
-		if (medicalRecordDto.getAppointmentId() == null) {
-			throw new IllegalArgumentException("Appointment id is required");
-		}
-		if (!StringUtils.hasText(medicalRecordDto.getDiagnosis())) {
-			throw new IllegalArgumentException("Diagnosis is required");
-		}
-	}
 
 	private void applyChanges(MedicalRecord medicalRecord, MedicalRecordDto medicalRecordDto) {
 		medicalRecord.setAppointment(findAppointment(medicalRecordDto.getAppointmentId()));
